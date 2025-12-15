@@ -1,0 +1,82 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`FadeIn renders children correctly 1`] = `
+<View
+  collapsable={false}
+  style={
+    {
+      "opacity": 0,
+      "transform": [
+        {
+          "translateY": 20,
+        },
+      ],
+    }
+  }
+>
+  <Text>
+    Test Content
+  </Text>
+</View>
+`;
+
+exports[`FadeIn renders with custom delay 1`] = `
+<View
+  collapsable={false}
+  style={
+    {
+      "opacity": 0,
+      "transform": [
+        {
+          "translateY": 20,
+        },
+      ],
+    }
+  }
+>
+  <Text>
+    Delayed Content
+  </Text>
+</View>
+`;
+
+exports[`FadeIn renders with custom duration 1`] = `
+<View
+  collapsable={false}
+  style={
+    {
+      "opacity": 0,
+      "transform": [
+        {
+          "translateY": 20,
+        },
+      ],
+    }
+  }
+>
+  <Text>
+    Slow Fade Content
+  </Text>
+</View>
+`;
+
+exports[`FadeIn renders with custom style 1`] = `
+<View
+  collapsable={false}
+  style={
+    {
+      "opacity": 0,
+      "padding": 20,
+      "transform": [
+        {
+          "translateY": 20,
+        },
+      ],
+    }
+  }
+>
+  <Text>
+    Styled Content
+  </Text>
+</View>
+`;

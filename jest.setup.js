@@ -1,5 +1,12 @@
 // Jest setup file
 
+// Mock expo's winter runtime BEFORE anything else loads
+jest.mock("expo/src/winter/runtime.native", () => ({}), { virtual: true });
+jest.mock("expo/src/winter/installGlobal", () => ({}), { virtual: true });
+
+// Mock the main expo module
+jest.mock("expo", () => ({}));
+
 // Mock expo modules
 jest.mock("expo-file-system", () => ({
   readAsStringAsync: jest.fn(),
@@ -31,6 +38,11 @@ jest.mock("expo-constants", () => ({
     },
   },
 }));
+
+// Mock AsyncStorage
+jest.mock("@react-native-async-storage/async-storage", () =>
+  require("@react-native-async-storage/async-storage/jest/async-storage-mock")
+);
 
 // Silence console errors in tests
 const originalError = console.error;

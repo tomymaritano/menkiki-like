@@ -1,0 +1,566 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`SkeletonCard renders with custom delay 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "backgroundColor": "#1a1a1a",
+      "borderRadius": 12,
+      "flexDirection": "row",
+      "padding": 16,
+    }
+  }
+>
+  <View
+    style={
+      {
+        "flex": 1,
+      }
+    }
+  >
+    <View
+      collapsable={false}
+      style={
+        {
+          "backgroundColor": "#888",
+          "borderRadius": 4,
+          "height": 20,
+          "marginBottom": 8,
+          "opacity": 0.3,
+          "width": "70%",
+        }
+      }
+    />
+    <View
+      style={
+        {
+          "flexDirection": "row",
+          "gap": 8,
+          "marginBottom": 8,
+        }
+      }
+    >
+      <View
+        collapsable={false}
+        style={
+          {
+            "backgroundColor": "#888",
+            "borderRadius": 4,
+            "height": 14,
+            "opacity": 0.3,
+            "width": 60,
+          }
+        }
+      />
+      <View
+        collapsable={false}
+        style={
+          {
+            "backgroundColor": "#888",
+            "borderRadius": 4,
+            "height": 14,
+            "opacity": 0.3,
+            "width": 40,
+          }
+        }
+      />
+    </View>
+    <View
+      collapsable={false}
+      style={
+        {
+          "backgroundColor": "#888",
+          "borderRadius": 4,
+          "height": 12,
+          "opacity": 0.3,
+          "width": "50%",
+        }
+      }
+    />
+  </View>
+  <View
+    collapsable={false}
+    style={
+      {
+        "backgroundColor": "#888",
+        "borderRadius": 10,
+        "height": 20,
+        "opacity": 0.3,
+        "width": 20,
+      }
+    }
+  />
+</View>
+`;
+
+exports[`SkeletonCard renders with default props 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "backgroundColor": "#1a1a1a",
+      "borderRadius": 12,
+      "flexDirection": "row",
+      "padding": 16,
+    }
+  }
+>
+  <View
+    style={
+      {
+        "flex": 1,
+      }
+    }
+  >
+    <View
+      collapsable={false}
+      style={
+        {
+          "backgroundColor": "#888",
+          "borderRadius": 4,
+          "height": 20,
+          "marginBottom": 8,
+          "opacity": 0.3,
+          "width": "70%",
+        }
+      }
+    />
+    <View
+      style={
+        {
+          "flexDirection": "row",
+          "gap": 8,
+          "marginBottom": 8,
+        }
+      }
+    >
+      <View
+        collapsable={false}
+        style={
+          {
+            "backgroundColor": "#888",
+            "borderRadius": 4,
+            "height": 14,
+            "opacity": 0.3,
+            "width": 60,
+          }
+        }
+      />
+      <View
+        collapsable={false}
+        style={
+          {
+            "backgroundColor": "#888",
+            "borderRadius": 4,
+            "height": 14,
+            "opacity": 0.3,
+            "width": 40,
+          }
+        }
+      />
+    </View>
+    <View
+      collapsable={false}
+      style={
+        {
+          "backgroundColor": "#888",
+          "borderRadius": 4,
+          "height": 12,
+          "opacity": 0.3,
+          "width": "50%",
+        }
+      }
+    />
+  </View>
+  <View
+    collapsable={false}
+    style={
+      {
+        "backgroundColor": "#888",
+        "borderRadius": 10,
+        "height": 20,
+        "opacity": 0.3,
+        "width": 20,
+      }
+    }
+  />
+</View>
+`;
+
+exports[`SkeletonList renders multiple skeleton cards 1`] = `
+<View
+  style={
+    {
+      "gap": 12,
+      "paddingBottom": 40,
+      "paddingHorizontal": 20,
+    }
+  }
+>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "backgroundColor": "#1a1a1a",
+        "borderRadius": 12,
+        "flexDirection": "row",
+        "padding": 16,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flex": 1,
+        }
+      }
+    >
+      <View
+        collapsable={false}
+        style={
+          {
+            "backgroundColor": "#888",
+            "borderRadius": 4,
+            "height": 20,
+            "marginBottom": 8,
+            "opacity": 0.3,
+            "width": "70%",
+          }
+        }
+      />
+      <View
+        style={
+          {
+            "flexDirection": "row",
+            "gap": 8,
+            "marginBottom": 8,
+          }
+        }
+      >
+        <View
+          collapsable={false}
+          style={
+            {
+              "backgroundColor": "#888",
+              "borderRadius": 4,
+              "height": 14,
+              "opacity": 0.3,
+              "width": 60,
+            }
+          }
+        />
+        <View
+          collapsable={false}
+          style={
+            {
+              "backgroundColor": "#888",
+              "borderRadius": 4,
+              "height": 14,
+              "opacity": 0.3,
+              "width": 40,
+            }
+          }
+        />
+      </View>
+      <View
+        collapsable={false}
+        style={
+          {
+            "backgroundColor": "#888",
+            "borderRadius": 4,
+            "height": 12,
+            "opacity": 0.3,
+            "width": "50%",
+          }
+        }
+      />
+    </View>
+    <View
+      collapsable={false}
+      style={
+        {
+          "backgroundColor": "#888",
+          "borderRadius": 10,
+          "height": 20,
+          "opacity": 0.3,
+          "width": 20,
+        }
+      }
+    />
+  </View>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "backgroundColor": "#1a1a1a",
+        "borderRadius": 12,
+        "flexDirection": "row",
+        "padding": 16,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flex": 1,
+        }
+      }
+    >
+      <View
+        collapsable={false}
+        style={
+          {
+            "backgroundColor": "#888",
+            "borderRadius": 4,
+            "height": 20,
+            "marginBottom": 8,
+            "opacity": 0.3,
+            "width": "70%",
+          }
+        }
+      />
+      <View
+        style={
+          {
+            "flexDirection": "row",
+            "gap": 8,
+            "marginBottom": 8,
+          }
+        }
+      >
+        <View
+          collapsable={false}
+          style={
+            {
+              "backgroundColor": "#888",
+              "borderRadius": 4,
+              "height": 14,
+              "opacity": 0.3,
+              "width": 60,
+            }
+          }
+        />
+        <View
+          collapsable={false}
+          style={
+            {
+              "backgroundColor": "#888",
+              "borderRadius": 4,
+              "height": 14,
+              "opacity": 0.3,
+              "width": 40,
+            }
+          }
+        />
+      </View>
+      <View
+        collapsable={false}
+        style={
+          {
+            "backgroundColor": "#888",
+            "borderRadius": 4,
+            "height": 12,
+            "opacity": 0.3,
+            "width": "50%",
+          }
+        }
+      />
+    </View>
+    <View
+      collapsable={false}
+      style={
+        {
+          "backgroundColor": "#888",
+          "borderRadius": 10,
+          "height": 20,
+          "opacity": 0.3,
+          "width": 20,
+        }
+      }
+    />
+  </View>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "backgroundColor": "#1a1a1a",
+        "borderRadius": 12,
+        "flexDirection": "row",
+        "padding": 16,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flex": 1,
+        }
+      }
+    >
+      <View
+        collapsable={false}
+        style={
+          {
+            "backgroundColor": "#888",
+            "borderRadius": 4,
+            "height": 20,
+            "marginBottom": 8,
+            "opacity": 0.3,
+            "width": "70%",
+          }
+        }
+      />
+      <View
+        style={
+          {
+            "flexDirection": "row",
+            "gap": 8,
+            "marginBottom": 8,
+          }
+        }
+      >
+        <View
+          collapsable={false}
+          style={
+            {
+              "backgroundColor": "#888",
+              "borderRadius": 4,
+              "height": 14,
+              "opacity": 0.3,
+              "width": 60,
+            }
+          }
+        />
+        <View
+          collapsable={false}
+          style={
+            {
+              "backgroundColor": "#888",
+              "borderRadius": 4,
+              "height": 14,
+              "opacity": 0.3,
+              "width": 40,
+            }
+          }
+        />
+      </View>
+      <View
+        collapsable={false}
+        style={
+          {
+            "backgroundColor": "#888",
+            "borderRadius": 4,
+            "height": 12,
+            "opacity": 0.3,
+            "width": "50%",
+          }
+        }
+      />
+    </View>
+    <View
+      collapsable={false}
+      style={
+        {
+          "backgroundColor": "#888",
+          "borderRadius": 10,
+          "height": 20,
+          "opacity": 0.3,
+          "width": 20,
+        }
+      }
+    />
+  </View>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "backgroundColor": "#1a1a1a",
+        "borderRadius": 12,
+        "flexDirection": "row",
+        "padding": 16,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flex": 1,
+        }
+      }
+    >
+      <View
+        collapsable={false}
+        style={
+          {
+            "backgroundColor": "#888",
+            "borderRadius": 4,
+            "height": 20,
+            "marginBottom": 8,
+            "opacity": 0.3,
+            "width": "70%",
+          }
+        }
+      />
+      <View
+        style={
+          {
+            "flexDirection": "row",
+            "gap": 8,
+            "marginBottom": 8,
+          }
+        }
+      >
+        <View
+          collapsable={false}
+          style={
+            {
+              "backgroundColor": "#888",
+              "borderRadius": 4,
+              "height": 14,
+              "opacity": 0.3,
+              "width": 60,
+            }
+          }
+        />
+        <View
+          collapsable={false}
+          style={
+            {
+              "backgroundColor": "#888",
+              "borderRadius": 4,
+              "height": 14,
+              "opacity": 0.3,
+              "width": 40,
+            }
+          }
+        />
+      </View>
+      <View
+        collapsable={false}
+        style={
+          {
+            "backgroundColor": "#888",
+            "borderRadius": 4,
+            "height": 12,
+            "opacity": 0.3,
+            "width": "50%",
+          }
+        }
+      />
+    </View>
+    <View
+      collapsable={false}
+      style={
+        {
+          "backgroundColor": "#888",
+          "borderRadius": 10,
+          "height": 20,
+          "opacity": 0.3,
+          "width": 20,
+        }
+      }
+    />
+  </View>
+</View>
+`;

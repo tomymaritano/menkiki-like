@@ -19,9 +19,9 @@ describe("Classifier Service", () => {
     });
 
     it("should handle boundary case at threshold", () => {
-      // CONFIDENCE_THRESHOLD is 0.7 (70%)
-      const atThreshold: ClassificationResult = { category: "pizza", confidence: 70 };
-      const belowThreshold: ClassificationResult = { category: "pizza", confidence: 69 };
+      // CONFIDENCE_THRESHOLD is 0.6 (60%)
+      const atThreshold: ClassificationResult = { category: "pizza", confidence: 60 };
+      const belowThreshold: ClassificationResult = { category: "pizza", confidence: 59 };
 
       expect(isConfident(atThreshold)).toBe(true);
       expect(isConfident(belowThreshold)).toBe(false);

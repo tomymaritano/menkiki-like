@@ -1,0 +1,75 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`OfflineBanner renders with custom message 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "backgroundColor": "#ef4444",
+      "flexDirection": "row",
+      "gap": 8,
+      "justifyContent": "center",
+      "paddingHorizontal": 16,
+      "paddingVertical": 10,
+    }
+  }
+>
+  <Text
+    style={
+      {
+        "fontSize": 14,
+      }
+    }
+  >
+    📡
+  </Text>
+  <Text
+    style={
+      {
+        "color": "#fff",
+        "fontSize": 14,
+        "fontWeight": "500",
+      }
+    }
+  >
+    You are offline
+  </Text>
+</View>
+`;
+
+exports[`OfflineBanner renders with default message 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "backgroundColor": "#ef4444",
+      "flexDirection": "row",
+      "gap": 8,
+      "justifyContent": "center",
+      "paddingHorizontal": 16,
+      "paddingVertical": 10,
+    }
+  }
+>
+  <Text
+    style={
+      {
+        "fontSize": 14,
+      }
+    }
+  >
+    📡
+  </Text>
+  <Text
+    style={
+      {
+        "color": "#fff",
+        "fontSize": 14,
+        "fontWeight": "500",
+      }
+    }
+  >
+    No internet connection
+  </Text>
+</View>
+`;
