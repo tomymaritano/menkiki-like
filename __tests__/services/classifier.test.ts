@@ -3,7 +3,12 @@
  * Tests the label mapping and utility functions
  */
 
-import { isConfident, getCategoryDisplayName } from "../../src/services/classifier";
+import {
+  isConfident,
+  getCategoryDisplayName,
+  getModelStatus,
+  isModelReady,
+} from "../../src/services/classifier";
 import type { ClassificationResult } from "../../src/types";
 
 describe("Classifier Service", () => {
@@ -47,6 +52,19 @@ describe("Classifier Service", () => {
 
     it("should return correct display name for empanada", () => {
       expect(getCategoryDisplayName("empanada")).toBe("Empanada");
+    });
+  });
+
+  describe("getModelStatus", () => {
+    it("should return idle when model not loaded", () => {
+      // Model starts in idle state
+      expect(getModelStatus()).toBe("idle");
+    });
+  });
+
+  describe("isModelReady", () => {
+    it("should return false when model not loaded", () => {
+      expect(isModelReady()).toBe(false);
     });
   });
 });
