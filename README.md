@@ -1,8 +1,10 @@
-# Menkiki-like — Food Photo → Restaurant Recommendations
+# Menkiki — Food Photo → Restaurant Recommendations
 
 A mobile app that recommends nearby restaurants based on a photo of the dish you want to eat.
 
 Inspired by [Menkiki](https://www.menkiki.com/) (2015), a Japanese app created by Takuya Matsuyama before Inkdrop.
+
+[![CI](https://github.com/tomymaritano/menkiki-like/actions/workflows/ci.yml/badge.svg)](https://github.com/tomymaritano/menkiki-like/actions/workflows/ci.yml)
 
 ---
 
@@ -23,27 +25,15 @@ No typing. No filters. Just intent.
 
 ---
 
-## Screenshots
+## Features
 
-| Camera | Detection | Results |
-|--------|-----------|---------|
-| Point at food | AI classification | Nearby places |
-
-*Screenshots coming soon*
-
----
-
-## Key Decisions
-
-| Decision | Rationale |
-|----------|-----------|
-| Mobile-first (iOS & Android) | Target use case is on-the-go |
-| On-device computer vision | No paid AI APIs, works offline |
-| Minimal UX (4 screens) | Reduce friction, fast iteration |
-| One city (Buenos Aires) for v1 | Higher data quality, easier validation |
-| No accounts, no social features | Not needed for core value |
-
-See full decision log in [`docs/decisions.md`](docs/decisions.md).
+- **AI Food Recognition** — MobileNet v2 for real-time classification
+- **Restaurant Search** — Find nearby places via Google Places API
+- **Quick Actions** — Call restaurant or open in Maps
+- **Favorites** — Save your favorite spots
+- **Search History** — Track past searches
+- **Offline Mode** — Works with cached data
+- **Dark Theme** — Modern, comfortable UI
 
 ---
 
@@ -51,61 +41,13 @@ See full decision log in [`docs/decisions.md`](docs/decisions.md).
 
 | Layer | Technology |
 |-------|------------|
-| Framework | Expo (React Native) |
+| Framework | Expo SDK 54 (React Native) |
 | Navigation | Expo Router |
-| Computer Vision | TensorFlow.js |
+| ML | TensorFlow.js + MobileNet v2 |
 | Restaurant Data | Google Places API |
-| Camera | Expo Camera |
-| Location | Expo Location |
-
----
-
-## Project Structure
-
-```
-menkiki-like/
-├── app/                    # Screens (Expo Router)
-│   ├── _layout.tsx         # Root layout
-│   ├── index.tsx           # Camera screen
-│   ├── detection.tsx       # Classification screen
-│   └── results.tsx         # Restaurant list
-├── src/
-│   ├── components/         # Reusable components
-│   ├── hooks/              # Custom React hooks
-│   │   ├── useClassifier   # AI classification
-│   │   ├── useLocation     # GPS positioning
-│   │   └── useRestaurants  # Places search
-│   ├── services/           # Business logic
-│   │   ├── classifier      # Image classification
-│   │   ├── places          # Google Places API
-│   │   └── tensorflow      # TF.js setup
-│   ├── constants/          # App constants
-│   └── types/              # TypeScript types
-└── docs/                   # Product documentation
-```
-
----
-
-## Documentation
-
-- [`docs/scope.md`](docs/scope.md) — What's in and out of v1
-- [`docs/ux-flow.md`](docs/ux-flow.md) — User journey and screens
-- [`docs/architecture.md`](docs/architecture.md) — System design
-- [`docs/decisions.md`](docs/decisions.md) — Product & technical decisions
-- [`docs/roadmap.md`](docs/roadmap.md) — Development phases
-
----
-
-## Roadmap
-
-| Phase | Focus | Status |
-|-------|-------|--------|
-| 1 | Foundation (Expo, navigation, camera) | ✅ Complete |
-| 2 | Computer Vision (TF.js, classification) | ✅ Complete |
-| 3 | Recommendations (location, Places API) | ✅ Complete |
-| 4 | Polish & Demo | 🚧 In Progress |
-
-See detailed breakdown in [`docs/roadmap.md`](docs/roadmap.md).
+| Storage | AsyncStorage |
+| Testing | Jest + React Native Testing Library |
+| CI/CD | GitHub Actions |
 
 ---
 
@@ -136,34 +78,116 @@ npx expo start
 To use real Google Places data instead of mock data:
 
 ```bash
-# Create .env file
-echo "EXPO_PUBLIC_GOOGLE_PLACES_API_KEY=your_api_key" > .env
+cp .env.example .env
+# Edit .env and add your API key
 ```
 
-### Running on Device
+### Available Scripts
 
-1. Install Expo Go on your phone
-2. Scan the QR code from terminal
-3. Grant camera and location permissions
-
----
-
-## Features
-
-- [x] Camera capture with permissions
-- [x] Food image classification (mock)
-- [x] Location-based restaurant search
-- [x] Google Maps integration
-- [x] Dark mode UI
-- [ ] Real TFLite model
-- [ ] Call restaurant action
-- [ ] Demo video
+```bash
+npm start          # Start Expo dev server
+npm run ios        # Run on iOS simulator
+npm run android    # Run on Android emulator
+npm test           # Run tests
+npm run test:coverage  # Run tests with coverage
+npm run lint       # Lint code
+npm run typecheck  # TypeScript check
+```
 
 ---
 
-## Status
+## Project Structure
 
-**In development** — Portfolio project demonstrating product thinking and mobile development.
+```
+menkiki-like/
+├── app/                    # Screens (Expo Router)
+│   ├── _layout.tsx         # Root layout + ErrorBoundary
+│   ├── index.tsx           # Camera screen
+│   ├── detection.tsx       # Classification screen
+│   ├── results.tsx         # Restaurant list
+│   ├── favorites.tsx       # Saved restaurants
+│   ├── history.tsx         # Search history
+│   └── onboarding.tsx      # First-launch flow
+├── src/
+│   ├── components/         # UI components
+│   ├── config/             # App configuration
+│   ├── hooks/              # Custom React hooks
+│   ├── services/           # Business logic
+│   ├── constants/          # App constants
+│   ├── types/              # TypeScript types
+│   └── utils/              # Utilities (logger)
+├── __tests__/              # Test files
+├── __mocks__/              # Jest mocks
+└── docs/                   # Documentation
+    └── store/              # App Store assets
+```
+
+---
+
+## Development Phases
+
+| Phase | Focus | Status |
+|-------|-------|--------|
+| 1 | Foundation (Expo, navigation, camera) | ✅ Complete |
+| 2 | Computer Vision (TF.js, classification) | ✅ Complete |
+| 3 | Recommendations (location, Places API) | ✅ Complete |
+| 4 | Polish (animations, offline, actions) | ✅ Complete |
+| 5 | Testing (Jest, RTL, coverage) | ✅ Complete |
+| 6 | CI/CD (GitHub Actions) | ✅ Complete |
+| 7 | Production Hardening | ✅ Complete |
+| 8 | Advanced ML | ✅ Complete |
+| 9 | App Store Readiness | ✅ Complete |
+
+---
+
+## Documentation
+
+- [`docs/store/metadata.md`](docs/store/metadata.md) — App Store descriptions & keywords
+- [`docs/store/privacy-policy.md`](docs/store/privacy-policy.md) — Privacy policy
+- [`docs/store/screenshots.md`](docs/store/screenshots.md) — Screenshot guidelines
+- [`docs/roadmap.md`](docs/roadmap.md) — Development phases
+
+---
+
+## Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run with coverage
+npm run test:coverage
+
+# Watch mode
+npm run test:watch
+```
+
+Current coverage:
+- **50 tests** passing
+- **100% component coverage**
+- Hooks and services tested
+
+---
+
+## App Store
+
+### iOS App Store
+- Category: Food & Drink
+- Rating: 4+
+- [Privacy Policy](docs/store/privacy-policy.md)
+
+### Google Play Store
+- Category: Food & Drink
+- Rating: Everyone
+- [Privacy Policy](docs/store/privacy-policy.md)
+
+See [store metadata](docs/store/metadata.md) for full descriptions and keywords.
+
+---
+
+## Version
+
+**v2.2.0** — Production ready
 
 ---
 
