@@ -63,11 +63,11 @@ export default function CameraScreen() {
       <CameraView ref={cameraRef} style={styles.camera} facing="back">
         <View style={styles.overlay}>
           <View style={styles.topBar}>
-            <TouchableOpacity
-              style={styles.favoritesButton}
-              onPress={() => router.push("/favorites")}
-            >
-              <Text style={styles.favoritesIcon}>❤️</Text>
+            <TouchableOpacity style={styles.topBarButton} onPress={() => router.push("/history")}>
+              <Text style={styles.topBarIcon}>🕐</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.topBarButton} onPress={() => router.push("/favorites")}>
+              <Text style={styles.topBarIcon}>❤️</Text>
             </TouchableOpacity>
           </View>
           <Text style={styles.hint}>Point at food</Text>
@@ -106,8 +106,10 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 60,
     right: 20,
+    flexDirection: "row",
+    gap: 12,
   },
-  favoritesButton: {
+  topBarButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -115,7 +117,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  favoritesIcon: {
+  topBarIcon: {
     fontSize: 20,
   },
   hint: {

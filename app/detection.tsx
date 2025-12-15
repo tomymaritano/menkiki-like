@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { useClassifier } from "../src/hooks/useClassifier";
+import { useClassifier, useHistory } from "../src/hooks";
 import { COLORS } from "../src/constants";
 import { PulsingDot, FadeIn } from "../src/components";
 
@@ -9,6 +9,7 @@ export default function DetectionScreen() {
   const { photoUri } = useLocalSearchParams<{ photoUri: string }>();
   const { isReady, isClassifying, result, displayName, isLowConfidence, error, classify } =
     useClassifier();
+  const { addToHistory } = useHistory();
 
   useEffect(() => {
     if (isReady && photoUri) {
@@ -16,8 +17,9 @@ export default function DetectionScreen() {
     }
   }, [isReady, photoUri, classify]);
 
-  const handleFindPlaces = () => {
+  const handleFindPlaces = async () => {
     if (!displayName) return;
+    await addToHistory(displayName);
     router.push({
       pathname: "/results",
       params: { category: displayName },

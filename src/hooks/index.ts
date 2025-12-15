@@ -4,3 +4,4 @@ export { useRestaurants } from "./useRestaurants";
 export { useNetwork } from "./useNetwork";
 export { useOnboarding } from "./useOnboarding";
 export { useFavorites } from "./useFavorites";
+export { useHistory } from "./useHistory";
