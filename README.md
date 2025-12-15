@@ -83,7 +83,7 @@ Coming soon.
 
 ```bash
 # Clone the repo
-git clone https://github.com/YOUR_USERNAME/menkiki-like.git
+git clone https://github.com/tomymaritano/menkiki-like.git
 cd menkiki-like
 
 # Install dependencies
