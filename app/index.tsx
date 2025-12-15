@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { router } from "expo-router";
+import { COLORS } from "../src/constants";
 
 export default function CameraScreen() {
   const cameraRef = useRef<CameraView>(null);
@@ -34,7 +35,9 @@ export default function CameraScreen() {
   if (!permission) {
     return (
       <View style={styles.container}>
-        <Text style={styles.message}>Loading camera...</Text>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading camera...</Text>
+        </View>
       </View>
     );
   }
@@ -59,6 +62,7 @@ export default function CameraScreen() {
     <View style={styles.container}>
       <CameraView ref={cameraRef} style={styles.camera} facing="back">
         <View style={styles.overlay}>
+          <Text style={styles.hint}>Point at food</Text>
           <View style={styles.focusFrame} />
         </View>
       </CameraView>
@@ -68,6 +72,7 @@ export default function CameraScreen() {
           style={[styles.captureButton, isCapturing && styles.captureButtonDisabled]}
           onPress={handleCapture}
           disabled={isCapturing}
+          activeOpacity={0.8}
         >
           <View style={styles.captureButtonInner} />
         </TouchableOpacity>
@@ -79,7 +84,7 @@ export default function CameraScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: COLORS.background,
   },
   camera: {
     flex: 1,
@@ -88,6 +93,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  hint: {
+    color: "rgba(255, 255, 255, 0.7)",
+    fontSize: 16,
+    marginBottom: 20,
+    textShadowColor: "rgba(0, 0, 0, 0.5)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   focusFrame: {
     width: 250,
@@ -100,13 +113,13 @@ const styles = StyleSheet.create({
     height: 120,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#000",
+    backgroundColor: COLORS.background,
   },
   captureButton: {
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.primary,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -117,9 +130,18 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.primary,
     borderWidth: 3,
-    borderColor: "#000",
+    borderColor: COLORS.background,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    color: COLORS.secondary,
+    fontSize: 16,
   },
   permissionContainer: {
     flex: 1,
@@ -128,26 +150,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   title: {
-    color: "#fff",
+    color: COLORS.primary,
     fontSize: 28,
     fontWeight: "700",
     marginBottom: 16,
   },
   message: {
-    color: "#888",
+    color: COLORS.secondary,
     fontSize: 16,
     textAlign: "center",
     lineHeight: 24,
     marginBottom: 32,
   },
   permissionButton: {
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.primary,
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 12,
   },
   permissionButtonText: {
-    color: "#000",
+    color: COLORS.background,
     fontSize: 18,
     fontWeight: "600",
   },

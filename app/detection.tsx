@@ -1,40 +1,39 @@
-import { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from "react-native";
+import { useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
+} from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
+import { useClassifier } from "../src/hooks/useClassifier";
+import { COLORS } from "../src/constants";
 
 export default function DetectionScreen() {
   const { photoUri } = useLocalSearchParams<{ photoUri: string }>();
-  const [isClassifying, setIsClassifying] = useState(true);
-  const [result, setResult] = useState<{ category: string; confidence: number } | null>(null);
+  const {
+    isReady,
+    isClassifying,
+    result,
+    displayName,
+    isLowConfidence,
+    error,
+    classify,
+  } = useClassifier();
 
   useEffect(() => {
-    // Simulate classification (will be replaced with TFLite)
-    const classifyImage = async () => {
-      setIsClassifying(true);
-
-      // Simulate ML inference delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Mock result - will be replaced with actual classification
-      const mockCategories = ["Pizza", "Sushi", "Ramen", "Burger", "Empanada"];
-      const randomCategory = mockCategories[Math.floor(Math.random() * mockCategories.length)];
-      const randomConfidence = Math.floor(Math.random() * 20) + 80; // 80-99%
-
-      setResult({
-        category: randomCategory,
-        confidence: randomConfidence,
-      });
-      setIsClassifying(false);
-    };
-
-    classifyImage();
-  }, [photoUri]);
+    if (isReady && photoUri) {
+      classify(photoUri);
+    }
+  }, [isReady, photoUri, classify]);
 
   const handleFindPlaces = () => {
-    if (!result) return;
+    if (!displayName) return;
     router.push({
       pathname: "/results",
-      params: { category: result.category },
+      params: { category: displayName },
     });
   };
 
@@ -42,11 +41,60 @@ export default function DetectionScreen() {
     router.back();
   };
 
+  const renderStatus = () => {
+    if (!isReady || isClassifying) {
+      return (
+        <>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.statusText}>
+            {!isReady ? "Loading AI model..." : "Analyzing image..."}
+          </Text>
+        </>
+      );
+    }
+
+    if (error) {
+      return (
+        <>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={() => photoUri && classify(photoUri)}>
+            <Text style={styles.retryButtonText}>Try again</Text>
+          </TouchableOpacity>
+        </>
+      );
+    }
+
+    if (result && displayName) {
+      return (
+        <>
+          <Text style={styles.label}>Detected</Text>
+          <Text style={styles.foodName}>{displayName}</Text>
+          <View style={styles.confidenceContainer}>
+            <Text style={[styles.confidence, isLowConfidence && styles.lowConfidence]}>
+              {result.confidence}% confidence
+            </Text>
+            {isLowConfidence && (
+              <Text style={styles.lowConfidenceWarning}>
+                Not very sure — try a clearer photo
+              </Text>
+            )}
+          </View>
+        </>
+      );
+    }
+
+    return <Text style={styles.errorText}>No result</Text>;
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.imageContainer}>
         {photoUri ? (
-          <Image source={{ uri: photoUri }} style={styles.image} resizeMode="cover" />
+          <Image
+            source={{ uri: photoUri }}
+            style={styles.image}
+            resizeMode="cover"
+          />
         ) : (
           <View style={styles.imagePlaceholder}>
             <Text style={styles.placeholderText}>No photo</Text>
@@ -54,28 +102,16 @@ export default function DetectionScreen() {
         )}
       </View>
 
-      <View style={styles.resultContainer}>
-        {isClassifying ? (
-          <>
-            <ActivityIndicator size="large" color="#fff" />
-            <Text style={styles.classifyingText}>Analyzing image...</Text>
-          </>
-        ) : result ? (
-          <>
-            <Text style={styles.label}>Detected</Text>
-            <Text style={styles.foodName}>{result.category}</Text>
-            <Text style={styles.confidence}>{result.confidence}% confidence</Text>
-          </>
-        ) : (
-          <Text style={styles.errorText}>Could not classify image</Text>
-        )}
-      </View>
+      <View style={styles.resultContainer}>{renderStatus()}</View>
 
       <View style={styles.actions}>
         <TouchableOpacity
-          style={[styles.primaryButton, (isClassifying || !result) && styles.buttonDisabled]}
+          style={[
+            styles.primaryButton,
+            (!result || isClassifying) && styles.buttonDisabled,
+          ]}
           onPress={handleFindPlaces}
-          disabled={isClassifying || !result}
+          disabled={!result || isClassifying}
         >
           <Text style={styles.primaryButtonText}>Find nearby places</Text>
         </TouchableOpacity>
@@ -91,7 +127,7 @@ export default function DetectionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: COLORS.background,
     paddingTop: 60,
   },
   imageContainer: {
@@ -101,49 +137,73 @@ const styles = StyleSheet.create({
   image: {
     height: 300,
     borderRadius: 16,
-    backgroundColor: "#1a1a1a",
+    backgroundColor: COLORS.surface,
   },
   imagePlaceholder: {
     height: 300,
-    backgroundColor: "#1a1a1a",
+    backgroundColor: COLORS.surface,
     borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
   },
   placeholderText: {
-    color: "#888",
+    color: COLORS.secondary,
     fontSize: 16,
   },
   resultContainer: {
     alignItems: "center",
     marginBottom: 40,
-    minHeight: 120,
+    minHeight: 140,
     justifyContent: "center",
+    paddingHorizontal: 20,
   },
-  classifyingText: {
-    color: "#888",
+  statusText: {
+    color: COLORS.secondary,
     fontSize: 16,
     marginTop: 16,
   },
   label: {
-    color: "#888",
+    color: COLORS.secondary,
     fontSize: 14,
     textTransform: "uppercase",
     letterSpacing: 1,
   },
   foodName: {
-    color: "#fff",
+    color: COLORS.primary,
     fontSize: 48,
     fontWeight: "700",
     marginTop: 8,
   },
-  confidence: {
-    color: "#4ade80",
-    fontSize: 16,
+  confidenceContainer: {
+    alignItems: "center",
     marginTop: 8,
   },
+  confidence: {
+    color: COLORS.success,
+    fontSize: 16,
+  },
+  lowConfidence: {
+    color: COLORS.warning,
+  },
+  lowConfidenceWarning: {
+    color: COLORS.secondary,
+    fontSize: 13,
+    marginTop: 4,
+  },
   errorText: {
-    color: "#ef4444",
+    color: COLORS.error,
+    fontSize: 16,
+    textAlign: "center",
+  },
+  retryButton: {
+    marginTop: 16,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: COLORS.surface,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: COLORS.primary,
     fontSize: 16,
   },
   actions: {
@@ -151,7 +211,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   primaryButton: {
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.primary,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center",
@@ -160,7 +220,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   primaryButtonText: {
-    color: "#000",
+    color: COLORS.background,
     fontSize: 18,
     fontWeight: "600",
   },
@@ -169,7 +229,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   secondaryButtonText: {
-    color: "#888",
+    color: COLORS.secondary,
     fontSize: 16,
   },
 });
