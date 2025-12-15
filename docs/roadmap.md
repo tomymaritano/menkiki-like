@@ -2,170 +2,226 @@
 
 ## Overview
 
-4 phases, each delivering incremental value. Each phase ends with a working (if limited) app.
+Phased development approach. Each phase delivers incremental value with a working app.
+
+**Current Version:** v2.1.0
 
 ---
 
-## Phase 1: Foundation
+## ✅ Phase 1: Foundation (COMPLETE)
 
 **Goal:** Working app skeleton with camera capture.
 
-### Tasks
+- [x] Initialize Expo project with TypeScript
+- [x] Configure ESLint + Prettier
+- [x] Setup Expo Router navigation
+- [x] Implement camera screen
+- [x] Handle camera permissions
+- [x] Create folder structure
 
-1. **Project Setup**
-   - Initialize Expo project
-   - Configure TypeScript
-   - Setup ESLint + Prettier
-   - Create folder structure
-
-2. **Navigation**
-   - Install Expo Router
-   - Create screen files
-   - Setup navigation flow
-
-3. **Camera Integration**
-   - Implement camera screen
-   - Handle permissions
-   - Capture and store photo
-
-### Deliverable
-App that captures photos and navigates between screens.
+**Release:** v1.0.0
 
 ---
 
-## Phase 2: Computer Vision
+## ✅ Phase 2: Computer Vision (COMPLETE)
 
-**Goal:** On-device food classification working.
+**Goal:** On-device food classification.
 
-### Tasks
+- [x] Install TensorFlow.js + React Native adapter
+- [x] Implement MobileNet v2 model
+- [x] Create image-to-tensor pipeline
+- [x] Map ImageNet labels to food categories
+- [x] Handle low confidence results
+- [x] Fallback mock classifier
 
-1. **TensorFlow Lite Setup**
-   - Install tfjs + tfjs-react-native
-   - Configure bundler for model files
-   - Test basic inference
-
-2. **Model Integration**
-   - Select/download food classification model
-   - Load model on app start
-   - Implement preprocessing pipeline
-
-3. **Classification Flow**
-   - Process captured image
-   - Run inference
-   - Display result with confidence
-   - Handle edge cases (low confidence, errors)
-
-4. **Category Mapping**
-   - Map model outputs to food categories
-   - Map categories to Places API keywords
-
-### Deliverable
-App that classifies food photos and shows detected category.
+**Release:** v2.0.0
 
 ---
 
-## Phase 3: Recommendations
+## ✅ Phase 3: Recommendations (COMPLETE)
 
 **Goal:** Full flow from photo to restaurant list.
 
-### Tasks
+- [x] Location services with expo-location
+- [x] Google Places API integration
+- [x] Mock data fallback (Buenos Aires)
+- [x] Results screen with ranking
+- [x] Action sheet (Maps, Call)
+- [x] Distance + rating hybrid score
 
-1. **Location Services**
-   - Request location permission
-   - Get current coordinates
-   - Handle permission denial
-
-2. **Places API Integration**
-   - Setup API key securely
-   - Implement Nearby Search call
-   - Parse response data
-
-3. **Results Screen**
-   - Display restaurant list
-   - Show name, rating, distance
-   - Handle empty/error states
-
-4. **Actions**
-   - Open in Google Maps
-   - Call restaurant
-   - Handle missing data gracefully
-
-5. **Ranking Logic**
-   - Implement distance + rating hybrid
-   - Sort results
-   - Limit to top N results
-
-### Deliverable
-Complete working app: photo → classification → nearby restaurants.
+**Release:** v1.0.0
 
 ---
 
-## Phase 4: Polish & Demo
+## ✅ Phase 4: Polish & UX (COMPLETE)
 
 **Goal:** Portfolio-ready quality.
 
-### Tasks
+- [x] Loading animations (PulsingDot, SkeletonCard, FadeIn)
+- [x] Offline detection banner
+- [x] Onboarding flow (4 slides)
+- [x] Splash screen integration
+- [x] Error states and recovery
+- [x] Favorites with AsyncStorage
+- [x] Search history
 
-1. **UX Polish**
-   - Loading states and animations
-   - Error messages and recovery
-   - Permission explanation screens
-   - Haptic feedback
-
-2. **Edge Cases**
-   - No internet handling
-   - No results handling
-   - Invalid photo handling
-   - Low confidence handling
-
-3. **Performance**
-   - Model loading optimization
-   - Image preprocessing speed
-   - List rendering optimization
-
-4. **Demo Materials**
-   - Record demo video
-   - Take screenshots
-   - Update README with visuals
-
-5. **Code Quality**
-   - Code review and cleanup
-   - Add key comments
-   - Ensure consistent style
-
-### Deliverable
-Polished app ready to show in interviews, with demo video.
+**Release:** v2.1.0
 
 ---
 
-## Future Phases (Out of Scope)
+## 🔄 Phase 5: Testing (CURRENT)
 
-These are documented but not planned for v1:
+**Goal:** Confidence in code quality.
 
-### Phase 5: Extended Categories
-- Add more food categories
-- Improve ML model accuracy
-- Custom model training
+### 5.1 Unit Tests
+- [ ] Setup Jest + React Native Testing Library
+- [ ] Test hooks (useClassifier, useFavorites, useHistory)
+- [ ] Test services (classifier, places)
+- [ ] Test utility functions
+- [ ] Aim for 80%+ coverage on business logic
 
-### Phase 6: Multi-City
-- City selection
-- Localized categories
-- Different API regions
+### 5.2 Component Tests
+- [ ] Test UI components in isolation
+- [ ] Snapshot tests for key screens
+- [ ] Test user interactions
 
-### Phase 7: User Features
-- User accounts
-- Favorites
-- Search history
-- Personalization
+### 5.3 Integration Tests
+- [ ] Test navigation flows
+- [ ] Test async storage persistence
+- [ ] Test API error handling
+
+**Deliverable:** Test suite with CI integration.
 
 ---
 
-## Timeline Guidance
+## 📋 Phase 6: CI/CD Pipeline
 
-No time estimates provided intentionally. Each phase can be completed when ready. Focus on quality over speed.
+**Goal:** Automated quality checks.
 
-**Recommended approach:**
-1. Complete each phase fully before moving on
-2. Test thoroughly at each phase
-3. Commit and document progress
-4. Don't skip to later phases
+### 6.1 GitHub Actions
+- [ ] Lint on every PR
+- [ ] Run tests on every PR
+- [ ] Type check with TypeScript
+- [ ] Build check (expo prebuild)
+
+### 6.2 Quality Gates
+- [ ] Require passing checks for merge
+- [ ] Code coverage reporting
+- [ ] Bundle size tracking
+
+### 6.3 Release Automation
+- [ ] Auto-tag on merge to main
+- [ ] Generate changelog
+- [ ] Create GitHub releases
+
+**Deliverable:** Automated pipeline for quality assurance.
+
+---
+
+## 📋 Phase 7: Production Hardening
+
+**Goal:** Production-ready reliability.
+
+### 7.1 Error Handling
+- [ ] Error boundaries for crash recovery
+- [ ] Sentry or similar error tracking
+- [ ] Graceful degradation
+
+### 7.2 Performance
+- [ ] Image compression before classification
+- [ ] Lazy load screens
+- [ ] Optimize re-renders with memo
+- [ ] Profile and fix bottlenecks
+
+### 7.3 Security
+- [ ] Secure API key storage
+- [ ] Input validation
+- [ ] Network request timeout handling
+
+### 7.4 Accessibility
+- [ ] Screen reader support
+- [ ] Accessible labels
+- [ ] Color contrast compliance
+- [ ] Touch target sizes
+
+**Deliverable:** Production-grade stability and accessibility.
+
+---
+
+## 📋 Phase 8: Advanced ML
+
+**Goal:** Improved classification accuracy.
+
+### 8.1 Custom Model
+- [ ] Prepare Food-101 dataset
+- [ ] Fine-tune MobileNet on food images
+- [ ] Convert to TensorFlow.js format
+- [ ] Test accuracy improvements
+
+### 8.2 Extended Categories
+- [ ] Add 10+ food categories
+- [ ] Improve label mapping
+- [ ] Handle multi-label predictions
+
+### 8.3 Model Optimization
+- [ ] Quantize model for smaller size
+- [ ] Benchmark inference speed
+- [ ] A/B test vs MobileNet
+
+**Deliverable:** 80%+ accuracy on food classification.
+
+---
+
+## 📋 Phase 9: App Store Readiness
+
+**Goal:** Ready for public release.
+
+### 9.1 Assets
+- [ ] App icon (all sizes)
+- [ ] Splash screen image
+- [ ] Screenshots for store listing
+- [ ] Demo video
+
+### 9.2 Store Listing
+- [ ] App description
+- [ ] Keywords/tags
+- [ ] Privacy policy
+- [ ] Terms of service
+
+### 9.3 Build & Submit
+- [ ] EAS Build configuration
+- [ ] TestFlight (iOS)
+- [ ] Internal testing (Android)
+- [ ] Submit for review
+
+**Deliverable:** App published to stores.
+
+---
+
+## Progress Summary
+
+| Phase | Status | Version |
+|-------|--------|---------|
+| 1. Foundation | ✅ Complete | v1.0.0 |
+| 2. Computer Vision | ✅ Complete | v2.0.0 |
+| 3. Recommendations | ✅ Complete | v1.0.0 |
+| 4. Polish & UX | ✅ Complete | v2.1.0 |
+| 5. Testing | 🔄 In Progress | - |
+| 6. CI/CD Pipeline | 📋 Planned | - |
+| 7. Production Hardening | 📋 Planned | - |
+| 8. Advanced ML | 📋 Planned | - |
+| 9. App Store | 📋 Planned | - |
+
+---
+
+## Recommended Order
+
+Follow phases sequentially:
+
+1. **Testing first** - Ensures existing code works before adding more
+2. **CI/CD** - Automates quality checks going forward
+3. **Production Hardening** - Makes app stable
+4. **Advanced ML** - Improves core feature
+5. **App Store** - Final polish for release
+
+Each phase builds on the previous. Don't skip ahead.
