@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   View,
   Text,
@@ -6,20 +7,81 @@ import {
   TouchableOpacity,
   Linking,
   ActivityIndicator,
+  Modal,
+  Pressable,
 } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { useRestaurants } from "../src/hooks/useRestaurants";
 import { COLORS } from "../src/constants";
 import type { Restaurant } from "../src/types";
 
-function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
-  const handlePress = () => {
+interface ActionSheetProps {
+  visible: boolean;
+  restaurant: Restaurant | null;
+  onClose: () => void;
+}
+
+function ActionSheet({ visible, restaurant, onClose }: ActionSheetProps) {
+  if (!restaurant) return null;
+
+  const handleOpenMaps = () => {
     const query = encodeURIComponent(`${restaurant.name} ${restaurant.address} Buenos Aires`);
     Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${query}`);
+    onClose();
   };
 
+  const handleCall = () => {
+    // Mock phone numbers for demo
+    const mockPhones: Record<string, string> = {
+      "Pizzeria Güerrin": "+54 11 4371-8141",
+      "El Cuartito": "+54 11 4816-1758",
+      Osaka: "+54 11 4775-6964",
+      "Burger Joint": "+54 11 4833-5151",
+    };
+    const phone = restaurant.phone || mockPhones[restaurant.name] || null;
+
+    if (phone) {
+      Linking.openURL(`tel:${phone.replace(/\s/g, "")}`);
+    }
+    onClose();
+  };
+
+  const hasPhone =
+    restaurant.phone ||
+    ["Pizzeria Güerrin", "El Cuartito", "Osaka", "Burger Joint"].includes(restaurant.name);
+
   return (
-    <TouchableOpacity style={styles.card} onPress={handlePress} activeOpacity={0.7}>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <Pressable style={styles.modalOverlay} onPress={onClose}>
+        <View style={styles.actionSheet}>
+          <View style={styles.actionSheetHandle} />
+          <Text style={styles.actionSheetTitle}>{restaurant.name}</Text>
+          <Text style={styles.actionSheetSubtitle}>{restaurant.address}</Text>
+
+          <TouchableOpacity style={styles.actionButton} onPress={handleOpenMaps}>
+            <Text style={styles.actionButtonIcon}>📍</Text>
+            <Text style={styles.actionButtonText}>Open in Maps</Text>
+          </TouchableOpacity>
+
+          {hasPhone && (
+            <TouchableOpacity style={styles.actionButton} onPress={handleCall}>
+              <Text style={styles.actionButtonIcon}>📞</Text>
+              <Text style={styles.actionButtonText}>Call Restaurant</Text>
+            </TouchableOpacity>
+          )}
+
+          <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </Pressable>
+    </Modal>
+  );
+}
+
+function RestaurantCard({ restaurant, onPress }: { restaurant: Restaurant; onPress: () => void }) {
+  return (
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.cardContent}>
         <Text style={styles.name}>{restaurant.name}</Text>
         <View style={styles.meta}>
@@ -75,6 +137,7 @@ function EmptyState({ category }: { category: string }) {
 export default function ResultsScreen() {
   const { category } = useLocalSearchParams<{ category: string }>();
   const { restaurants, isLoading, error, retry } = useRestaurants(category || "Pizza");
+  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
 
   const renderContent = () => {
     if (isLoading) {
@@ -93,7 +156,9 @@ export default function ResultsScreen() {
       <FlatList
         data={restaurants}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <RestaurantCard restaurant={item} />}
+        renderItem={({ item }) => (
+          <RestaurantCard restaurant={item} onPress={() => setSelectedRestaurant(item)} />
+        )}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
       />
@@ -116,6 +181,12 @@ export default function ResultsScreen() {
       </View>
 
       {renderContent()}
+
+      <ActionSheet
+        visible={!!selectedRestaurant}
+        restaurant={selectedRestaurant}
+        onClose={() => setSelectedRestaurant(null)}
+      />
     </View>
   );
 }
@@ -252,5 +323,66 @@ const styles = StyleSheet.create({
   emptyButtonText: {
     color: COLORS.primary,
     fontSize: 16,
+  },
+  // Action Sheet styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  actionSheet: {
+    backgroundColor: COLORS.surface,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: 40,
+  },
+  actionSheetHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: COLORS.secondary,
+    borderRadius: 2,
+    alignSelf: "center",
+    marginBottom: 20,
+  },
+  actionSheetTitle: {
+    color: COLORS.primary,
+    fontSize: 20,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  actionSheetSubtitle: {
+    color: COLORS.secondary,
+    fontSize: 14,
+    textAlign: "center",
+    marginTop: 4,
+    marginBottom: 20,
+  },
+  actionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.background,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 10,
+  },
+  actionButtonIcon: {
+    fontSize: 20,
+    marginRight: 12,
+  },
+  actionButtonText: {
+    color: COLORS.primary,
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  cancelButton: {
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 10,
+  },
+  cancelButtonText: {
+    color: COLORS.secondary,
+    fontSize: 16,
+    textAlign: "center",
   },
 });
