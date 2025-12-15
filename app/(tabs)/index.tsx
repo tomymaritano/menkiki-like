@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { router } from "expo-router";
-import { COLORS } from "../src/constants";
+import { COLORS } from "../../src/constants";
 
 export default function CameraScreen() {
   const cameraRef = useRef<CameraView>(null);
@@ -46,6 +46,7 @@ export default function CameraScreen() {
     return (
       <View style={styles.container}>
         <View style={styles.permissionContainer}>
+          <Text style={styles.emoji}>📷</Text>
           <Text style={styles.title}>Camera Access</Text>
           <Text style={styles.message}>
             We need camera access to take photos of food and find nearby restaurants.
@@ -62,16 +63,20 @@ export default function CameraScreen() {
     <View style={styles.container}>
       <CameraView ref={cameraRef} style={styles.camera} facing="back">
         <View style={styles.overlay}>
-          <View style={styles.topBar}>
-            <TouchableOpacity style={styles.topBarButton} onPress={() => router.push("/history")}>
-              <Text style={styles.topBarIcon}>🕐</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.topBarButton} onPress={() => router.push("/favorites")}>
-              <Text style={styles.topBarIcon}>❤️</Text>
-            </TouchableOpacity>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Menkiki</Text>
+            <Text style={styles.headerSubtitle}>Point at food to find restaurants</Text>
           </View>
-          <Text style={styles.hint}>Point at food</Text>
-          <View style={styles.focusFrame} />
+
+          <View style={styles.focusContainer}>
+            <View style={styles.focusFrame}>
+              <View style={[styles.corner, styles.topLeft]} />
+              <View style={[styles.corner, styles.topRight]} />
+              <View style={[styles.corner, styles.bottomLeft]} />
+              <View style={[styles.corner, styles.bottomRight]} />
+            </View>
+            <Text style={styles.hint}>🍕 🍔 🍣 🍜</Text>
+          </View>
         </View>
       </CameraView>
 
@@ -99,63 +104,102 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "space-between",
+    paddingTop: 60,
+    paddingBottom: 20,
+  },
+  header: {
     alignItems: "center",
   },
-  topBar: {
-    position: "absolute",
-    top: 60,
-    right: 20,
-    flexDirection: "row",
-    gap: 12,
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#fff",
+    textShadowColor: "rgba(0, 0, 0, 0.5)",
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
-  topBarButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  topBarIcon: {
-    fontSize: 20,
-  },
-  hint: {
-    color: "rgba(255, 255, 255, 0.7)",
-    fontSize: 16,
-    marginBottom: 20,
+  headerSubtitle: {
+    fontSize: 14,
+    color: "rgba(255, 255, 255, 0.8)",
+    marginTop: 4,
     textShadowColor: "rgba(0, 0, 0, 0.5)",
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
+  focusContainer: {
+    alignItems: "center",
+    marginBottom: 40,
+  },
   focusFrame: {
-    width: 250,
-    height: 250,
-    borderWidth: 2,
-    borderColor: "rgba(255, 255, 255, 0.5)",
-    borderRadius: 20,
+    width: 260,
+    height: 260,
+    position: "relative",
+  },
+  corner: {
+    position: "absolute",
+    width: 40,
+    height: 40,
+    borderColor: "#fff",
+  },
+  topLeft: {
+    top: 0,
+    left: 0,
+    borderTopWidth: 3,
+    borderLeftWidth: 3,
+    borderTopLeftRadius: 16,
+  },
+  topRight: {
+    top: 0,
+    right: 0,
+    borderTopWidth: 3,
+    borderRightWidth: 3,
+    borderTopRightRadius: 16,
+  },
+  bottomLeft: {
+    bottom: 0,
+    left: 0,
+    borderBottomWidth: 3,
+    borderLeftWidth: 3,
+    borderBottomLeftRadius: 16,
+  },
+  bottomRight: {
+    bottom: 0,
+    right: 0,
+    borderBottomWidth: 3,
+    borderRightWidth: 3,
+    borderBottomRightRadius: 16,
+  },
+  hint: {
+    fontSize: 24,
+    marginTop: 20,
+    letterSpacing: 8,
   },
   controls: {
-    height: 120,
+    height: 100,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: COLORS.background,
   },
   captureButton: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 76,
+    height: 76,
+    borderRadius: 38,
     backgroundColor: COLORS.primary,
     justifyContent: "center",
     alignItems: "center",
+    shadowColor: "#fff",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
   },
   captureButtonDisabled: {
     opacity: 0.5,
   },
   captureButtonInner: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     backgroundColor: COLORS.primary,
     borderWidth: 3,
     borderColor: COLORS.background,
@@ -174,6 +218,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 40,
+  },
+  emoji: {
+    fontSize: 64,
+    marginBottom: 20,
   },
   title: {
     color: COLORS.primary,
