@@ -2,7 +2,7 @@
   "expo": {
     "name": "Menkiki-like",
     "slug": "menkiki-like",
-    "version": "1.0.0",
+    "version": "2.2.0",
     "scheme": "menkiki",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,6 +16,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.tomymaritano.menkikilike",
+      "buildNumber": "1",
       "infoPlist": {
         "NSCameraUsageDescription": "We need camera access to take photos of food and find nearby restaurants.",
         "NSLocationWhenInUseUsageDescription": "We need your location to find nearby restaurants."
@@ -27,6 +28,7 @@
         "backgroundColor": "#000000"
       },
       "package": "com.tomymaritano.menkikilike",
+      "versionCode": 1,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.ACCESS_FINE_LOCATION",

@@ -4,7 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { View, StyleSheet, ActivityIndicator } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import { useNetwork, useOnboarding } from "../src/hooks";
-import { OfflineBanner } from "../src/components";
+import { OfflineBanner, ErrorBoundary } from "../src/components";
 import { COLORS } from "../src/constants";
 
 // Keep splash screen visible while loading
@@ -43,13 +43,15 @@ export default function RootLayout() {
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="light" />
-      {isOffline && <OfflineBanner />}
-      <View style={styles.content}>
-        <Slot />
+    <ErrorBoundary>
+      <View style={styles.container}>
+        <StatusBar style="light" />
+        {isOffline && <OfflineBanner />}
+        <View style={styles.content}>
+          <Slot />
+        </View>
       </View>
-    </View>
+    </ErrorBoundary>
   );
 }
 
