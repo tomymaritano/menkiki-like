@@ -9,46 +9,26 @@ import {
   Modal,
   Pressable,
 } from "react-native";
-import { useLocalSearchParams, router } from "expo-router";
-import { useRestaurants, useFavorites } from "../src/hooks";
+import { router } from "expo-router";
+import { useFavorites } from "../src/hooks/useFavorites";
 import { COLORS } from "../src/constants";
-import { SkeletonList, FadeIn } from "../src/components";
 import type { Restaurant } from "../src/types";
 
 interface ActionSheetProps {
   visible: boolean;
   restaurant: Restaurant | null;
   onClose: () => void;
+  onRemove: () => void;
 }
 
-function ActionSheet({ visible, restaurant, onClose }: ActionSheetProps) {
+function ActionSheet({ visible, restaurant, onClose, onRemove }: ActionSheetProps) {
   if (!restaurant) return null;
 
   const handleOpenMaps = () => {
-    const query = encodeURIComponent(`${restaurant.name} ${restaurant.address} Buenos Aires`);
+    const query = encodeURIComponent(`${restaurant.name} ${restaurant.address}`);
     Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${query}`);
     onClose();
   };
-
-  const handleCall = () => {
-    // Mock phone numbers for demo
-    const mockPhones: Record<string, string> = {
-      "Pizzeria Güerrin": "+54 11 4371-8141",
-      "El Cuartito": "+54 11 4816-1758",
-      Osaka: "+54 11 4775-6964",
-      "Burger Joint": "+54 11 4833-5151",
-    };
-    const phone = restaurant.phone || mockPhones[restaurant.name] || null;
-
-    if (phone) {
-      Linking.openURL(`tel:${phone.replace(/\s/g, "")}`);
-    }
-    onClose();
-  };
-
-  const hasPhone =
-    restaurant.phone ||
-    ["Pizzeria Güerrin", "El Cuartito", "Osaka", "Burger Joint"].includes(restaurant.name);
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -63,12 +43,10 @@ function ActionSheet({ visible, restaurant, onClose }: ActionSheetProps) {
             <Text style={styles.actionButtonText}>Open in Maps</Text>
           </TouchableOpacity>
 
-          {hasPhone && (
-            <TouchableOpacity style={styles.actionButton} onPress={handleCall}>
-              <Text style={styles.actionButtonIcon}>📞</Text>
-              <Text style={styles.actionButtonText}>Call Restaurant</Text>
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity style={styles.actionButton} onPress={onRemove}>
+            <Text style={styles.actionButtonIcon}>💔</Text>
+            <Text style={styles.actionButtonText}>Remove from Favorites</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
             <Text style={styles.cancelButtonText}>Cancel</Text>
@@ -79,17 +57,7 @@ function ActionSheet({ visible, restaurant, onClose }: ActionSheetProps) {
   );
 }
 
-function RestaurantCard({
-  restaurant,
-  onPress,
-  isFavorite,
-  onToggleFavorite,
-}: {
-  restaurant: Restaurant;
-  onPress: () => void;
-  isFavorite: boolean;
-  onToggleFavorite: () => void;
-}) {
+function RestaurantCard({ restaurant, onPress }: { restaurant: Restaurant; onPress: () => void }) {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.cardContent}>
@@ -97,95 +65,39 @@ function RestaurantCard({
         <View style={styles.meta}>
           <Text style={styles.rating}>★ {restaurant.rating.toFixed(1)}</Text>
           <Text style={styles.dot}>•</Text>
-          <Text style={styles.distance}>{restaurant.distance}</Text>
-          <Text style={styles.dot}>•</Text>
           <Text style={styles.price}>{restaurant.priceLevel}</Text>
         </View>
         <Text style={styles.address}>{restaurant.address}</Text>
       </View>
-      <TouchableOpacity
-        onPress={onToggleFavorite}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-      >
-        <Text style={styles.heart}>{isFavorite ? "❤️" : "🤍"}</Text>
-      </TouchableOpacity>
+      <Text style={styles.heart}>❤️</Text>
     </TouchableOpacity>
   );
 }
 
-function LoadingState() {
+function EmptyState() {
   return (
-    <View style={styles.loadingState}>
-      <Text style={styles.loadingText}>Finding nearby places...</Text>
-      <SkeletonList />
-    </View>
-  );
-}
-
-function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
-  return (
-    <View style={styles.centerState}>
-      <Text style={styles.errorTitle}>Oops!</Text>
-      <Text style={styles.errorText}>{message}</Text>
-      <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
-        <Text style={styles.retryButtonText}>Try again</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
-function EmptyState({ category }: { category: string }) {
-  return (
-    <View style={styles.centerState}>
-      <Text style={styles.emptyTitle}>No restaurants found</Text>
+    <View style={styles.emptyState}>
+      <Text style={styles.emptyEmoji}>💔</Text>
+      <Text style={styles.emptyTitle}>No favorites yet</Text>
       <Text style={styles.emptyText}>
-        We couldn't find any {category.toLowerCase()} places nearby. Try a different category or
-        expand your search area.
+        Start exploring and save your favorite restaurants for quick access.
       </Text>
-      <TouchableOpacity style={styles.emptyButton} onPress={() => router.back()}>
-        <Text style={styles.emptyButtonText}>Try another photo</Text>
+      <TouchableOpacity style={styles.emptyButton} onPress={() => router.push("/")}>
+        <Text style={styles.emptyButtonText}>Find Restaurants</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
-export default function ResultsScreen() {
-  const { category } = useLocalSearchParams<{ category: string }>();
-  const { restaurants, isLoading, error, retry } = useRestaurants(category || "Pizza");
-  const { isFavorite, toggleFavorite } = useFavorites();
+export default function FavoritesScreen() {
+  const { favorites, removeFavorite } = useFavorites();
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
 
-  const renderContent = () => {
-    if (isLoading) {
-      return <LoadingState />;
+  const handleRemove = async () => {
+    if (selectedRestaurant) {
+      await removeFavorite(selectedRestaurant.id);
+      setSelectedRestaurant(null);
     }
-
-    if (error && restaurants.length === 0) {
-      return <ErrorState message={error} onRetry={retry} />;
-    }
-
-    if (restaurants.length === 0) {
-      return <EmptyState category={category || "Food"} />;
-    }
-
-    return (
-      <FadeIn>
-        <FlatList
-          data={restaurants}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <RestaurantCard
-              restaurant={item}
-              onPress={() => setSelectedRestaurant(item)}
-              isFavorite={isFavorite(item.id)}
-              onToggleFavorite={() => toggleFavorite(item)}
-            />
-          )}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-        />
-      </FadeIn>
-    );
   };
 
   return (
@@ -197,18 +109,29 @@ export default function ResultsScreen() {
         >
           <Text style={styles.backButton}>← Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>{category || "Food"} nearby</Text>
-        {!isLoading && restaurants.length > 0 && (
-          <Text style={styles.subtitle}>{restaurants.length} places found</Text>
-        )}
+        <Text style={styles.title}>Favorites</Text>
+        {favorites.length > 0 && <Text style={styles.subtitle}>{favorites.length} saved</Text>}
       </View>
 
-      {renderContent()}
+      {favorites.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <FlatList
+          data={favorites}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <RestaurantCard restaurant={item} onPress={() => setSelectedRestaurant(item)} />
+          )}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
 
       <ActionSheet
         visible={!!selectedRestaurant}
         restaurant={selectedRestaurant}
         onClose={() => setSelectedRestaurant(null)}
+        onRemove={handleRemove}
       />
     </View>
   );
@@ -273,10 +196,6 @@ const styles = StyleSheet.create({
     color: COLORS.secondary,
     marginHorizontal: 6,
   },
-  distance: {
-    color: COLORS.secondary,
-    fontSize: 14,
-  },
   price: {
     color: COLORS.secondary,
     fontSize: 14,
@@ -285,56 +204,22 @@ const styles = StyleSheet.create({
     color: "#666",
     fontSize: 13,
   },
-  arrow: {
-    color: COLORS.secondary,
-    fontSize: 20,
-  },
   heart: {
     fontSize: 20,
-    marginLeft: 8,
   },
-  loadingState: {
-    flex: 1,
-  },
-  centerState: {
+  emptyState: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 40,
   },
-  loadingText: {
-    color: COLORS.secondary,
-    fontSize: 16,
-    textAlign: "center",
+  emptyEmoji: {
+    fontSize: 60,
     marginBottom: 20,
-  },
-  errorTitle: {
-    color: COLORS.primary,
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-  errorText: {
-    color: COLORS.secondary,
-    fontSize: 16,
-    textAlign: "center",
-    lineHeight: 24,
-    marginBottom: 24,
-  },
-  retryButton: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 32,
-    paddingVertical: 14,
-    borderRadius: 10,
-  },
-  retryButtonText: {
-    color: COLORS.background,
-    fontSize: 16,
-    fontWeight: "600",
   },
   emptyTitle: {
     color: COLORS.primary,
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "600",
     marginBottom: 8,
   },
@@ -346,16 +231,17 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   emptyButton: {
-    backgroundColor: COLORS.surface,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 10,
   },
   emptyButtonText: {
-    color: COLORS.primary,
+    color: COLORS.background,
     fontSize: 16,
+    fontWeight: "600",
   },
-  // Action Sheet styles
+  // Action Sheet
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
