@@ -1,12 +1,15 @@
-import { Slot } from "expo-router";
+import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { View } from "react-native";
 
 export default function RootLayout() {
   return (
-    <View style={{ flex: 1, backgroundColor: "#000" }}>
-      <StatusBar style="light" />
-      <Slot />
-    </View>
+    <>
+      <StatusBar style="light" backgroundColor="#000" />
+      <Stack>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="detection" options={{ headerShown: false }} />
+        <Stack.Screen name="results" options={{ headerShown: false }} />
+      </Stack>
+    </>
   );
 }
