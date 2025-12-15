@@ -32,7 +32,8 @@
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.ACCESS_COARSE_LOCATION"
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.RECORD_AUDIO"
       ],
       "edgeToEdgeEnabled": true
     },
@@ -52,6 +53,12 @@
           "locationWhenInUsePermission": "We need your location to find nearby restaurants."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "e10ce9fd-d377-424d-86eb-a9031b0f2f17"
+      }
+    },
+    "owner": "hacklabdog"
   }
 }
