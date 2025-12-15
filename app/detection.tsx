@@ -1,8 +1,9 @@
 import { useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useClassifier } from "../src/hooks/useClassifier";
 import { COLORS } from "../src/constants";
+import { PulsingDot, FadeIn } from "../src/components";
 
 export default function DetectionScreen() {
   const { photoUri } = useLocalSearchParams<{ photoUri: string }>();
@@ -30,18 +31,22 @@ export default function DetectionScreen() {
   const renderStatus = () => {
     if (!isReady || isClassifying) {
       return (
-        <>
-          <ActivityIndicator size="large" color={COLORS.primary} />
+        <View style={styles.loadingContainer}>
+          <View style={styles.pulsingRow}>
+            <PulsingDot size={10} color={COLORS.primary} />
+            <PulsingDot size={10} color={COLORS.primary} />
+            <PulsingDot size={10} color={COLORS.primary} />
+          </View>
           <Text style={styles.statusText}>
             {!isReady ? "Loading AI model..." : "Analyzing image..."}
           </Text>
-        </>
+        </View>
       );
     }
 
     if (error) {
       return (
-        <>
+        <FadeIn>
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity
             style={styles.retryButton}
@@ -49,13 +54,13 @@ export default function DetectionScreen() {
           >
             <Text style={styles.retryButtonText}>Try again</Text>
           </TouchableOpacity>
-        </>
+        </FadeIn>
       );
     }
 
     if (result && displayName) {
       return (
-        <>
+        <FadeIn>
           <Text style={styles.label}>Detected</Text>
           <Text style={styles.foodName}>{displayName}</Text>
           <View style={styles.confidenceContainer}>
@@ -66,7 +71,7 @@ export default function DetectionScreen() {
               <Text style={styles.lowConfidenceWarning}>Not very sure — try a clearer photo</Text>
             )}
           </View>
-        </>
+        </FadeIn>
       );
     }
 
@@ -136,6 +141,13 @@ const styles = StyleSheet.create({
     minHeight: 140,
     justifyContent: "center",
     paddingHorizontal: 20,
+  },
+  loadingContainer: {
+    alignItems: "center",
+  },
+  pulsingRow: {
+    flexDirection: "row",
+    gap: 8,
   },
   statusText: {
     color: COLORS.secondary,

@@ -6,13 +6,13 @@ import {
   FlatList,
   TouchableOpacity,
   Linking,
-  ActivityIndicator,
   Modal,
   Pressable,
 } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { useRestaurants } from "../src/hooks/useRestaurants";
 import { COLORS } from "../src/constants";
+import { SkeletonList, FadeIn } from "../src/components";
 import type { Restaurant } from "../src/types";
 
 interface ActionSheetProps {
@@ -100,9 +100,9 @@ function RestaurantCard({ restaurant, onPress }: { restaurant: Restaurant; onPre
 
 function LoadingState() {
   return (
-    <View style={styles.centerState}>
-      <ActivityIndicator size="large" color={COLORS.primary} />
+    <View style={styles.loadingState}>
       <Text style={styles.loadingText}>Finding nearby places...</Text>
+      <SkeletonList />
     </View>
   );
 }
@@ -153,15 +153,17 @@ export default function ResultsScreen() {
     }
 
     return (
-      <FlatList
-        data={restaurants}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <RestaurantCard restaurant={item} onPress={() => setSelectedRestaurant(item)} />
-        )}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
-      />
+      <FadeIn>
+        <FlatList
+          data={restaurants}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <RestaurantCard restaurant={item} onPress={() => setSelectedRestaurant(item)} />
+          )}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+        />
+      </FadeIn>
     );
   };
 
@@ -266,6 +268,9 @@ const styles = StyleSheet.create({
     color: COLORS.secondary,
     fontSize: 20,
   },
+  loadingState: {
+    flex: 1,
+  },
   centerState: {
     flex: 1,
     justifyContent: "center",
@@ -275,7 +280,8 @@ const styles = StyleSheet.create({
   loadingText: {
     color: COLORS.secondary,
     fontSize: 16,
-    marginTop: 16,
+    textAlign: "center",
+    marginBottom: 20,
   },
   errorTitle: {
     color: COLORS.primary,
