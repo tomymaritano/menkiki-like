@@ -19,7 +19,7 @@ const mockRestaurant: Restaurant = {
   address: "123 Test St",
 };
 
-const mockRestaurant2: Restaurant = {
+const _mockRestaurant2: Restaurant = {
   id: "2",
   name: "Another Restaurant",
   rating: 4.0,

@@ -54,6 +54,15 @@ export default [
     },
   },
   {
-    ignores: ["node_modules/", ".expo/", "dist/", "web-build/", "*.config.js"],
+    ignores: [
+      "node_modules/",
+      ".expo/",
+      "dist/",
+      "web-build/",
+      "*.config.js",
+      "jest.bootstrap.js",
+      "jest.setup.js",
+      "__mocks__/**",
+    ],
   },
 ];

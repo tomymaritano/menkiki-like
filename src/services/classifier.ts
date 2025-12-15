@@ -1,7 +1,7 @@
 import * as tf from "@tensorflow/tfjs";
 import "@tensorflow/tfjs-react-native";
 import * as mobilenet from "@tensorflow-models/mobilenet";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import { decodeJpeg } from "@tensorflow/tfjs-react-native";
 import { CONFIDENCE_THRESHOLD } from "../constants";
 import type { ClassificationResult, FoodCategory } from "../types";

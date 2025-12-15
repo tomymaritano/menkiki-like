@@ -7,7 +7,7 @@ import { searchNearbyRestaurants } from "../../src/services/places";
 import type { Location } from "../../src/types";
 
 // Mock fetch
-global.fetch = jest.fn();
+(globalThis as Record<string, unknown>).fetch = jest.fn();
 
 describe("Places Service", () => {
   const mockLocation: Location = {
