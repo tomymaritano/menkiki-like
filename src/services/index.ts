@@ -5,3 +5,4 @@ export {
   isConfident,
   getCategoryDisplayName,
 } from "./classifier";
+export { searchNearbyRestaurants } from "./places";
