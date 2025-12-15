@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import * as Location from "expo-location";
 import type { Location as LocationType } from "../types";
 
@@ -26,7 +26,6 @@ export function useLocation(): UseLocationReturn {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      // Request permission
       const { status } = await Location.requestForegroundPermissionsAsync();
       setState((prev) => ({ ...prev, permissionStatus: status }));
 
@@ -39,7 +38,6 @@ export function useLocation(): UseLocationReturn {
         return;
       }
 
-      // Get current location
       const currentLocation = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });

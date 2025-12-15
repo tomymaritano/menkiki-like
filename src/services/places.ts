@@ -1,5 +1,5 @@
 import { CATEGORY_KEYWORDS, RESULTS_LIMIT } from "../constants";
-import type { Restaurant, Location, FoodCategory } from "../types";
+import type { Restaurant, Location } from "../types";
 
 // Google Places API configuration
 // Note: In production, use environment variables and API key restrictions
@@ -33,12 +33,7 @@ interface PlacesSearchResponse {
 /**
  * Calculate distance between two coordinates in kilometers
  */
-function calculateDistance(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-): number {
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371; // Earth's radius in km
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
@@ -95,8 +90,7 @@ export async function searchNearbyRestaurants(
 
   // If no API key, return mock data
   if (!API_KEY) {
-    console.log("No API key, using mock data");
-    return getMockRestaurants(location, category);
+    return getMockRestaurants(category);
   }
 
   try {
@@ -140,50 +134,194 @@ export async function searchNearbyRestaurants(
     });
 
     // Sort by score and limit results
-    return restaurants
-      .sort((a, b) => (b as any)._score - (a as any)._score)
+    interface ScoredRestaurant extends Restaurant {
+      _distanceKm: number;
+      _score: number;
+    }
+    return (restaurants as ScoredRestaurant[])
+      .sort((a, b) => b._score - a._score)
       .slice(0, RESULTS_LIMIT)
-      .map(({ _distanceKm, _score, ...rest }: any) => rest);
+      .map(({ _distanceKm, _score, ...rest }) => rest);
   } catch (error) {
     console.error("Failed to fetch places:", error);
-    return getMockRestaurants(location, category);
+    return getMockRestaurants(category);
   }
 }
 
 /**
  * Get mock restaurants for demo/development
  */
-function getMockRestaurants(location: Location, category: string): Restaurant[] {
+function getMockRestaurants(category: string): Restaurant[] {
   const mockData: Record<string, Restaurant[]> = {
     pizza: [
-      { id: "1", name: "Pizzeria Güerrin", rating: 4.5, distance: "0.3 km", priceLevel: "$$", address: "Av. Corrientes 1368" },
-      { id: "2", name: "El Cuartito", rating: 4.3, distance: "0.7 km", priceLevel: "$$", address: "Talcahuano 937" },
-      { id: "3", name: "La Mezzetta", rating: 4.4, distance: "1.2 km", priceLevel: "$$", address: "Av. Álvarez Thomas 1321" },
-      { id: "4", name: "Banchero", rating: 4.2, distance: "1.5 km", priceLevel: "$", address: "Av. Corrientes 1300" },
-      { id: "5", name: "Las Cuartetas", rating: 4.1, distance: "0.4 km", priceLevel: "$$", address: "Av. Corrientes 838" },
+      {
+        id: "1",
+        name: "Pizzeria Güerrin",
+        rating: 4.5,
+        distance: "0.3 km",
+        priceLevel: "$$",
+        address: "Av. Corrientes 1368",
+      },
+      {
+        id: "2",
+        name: "El Cuartito",
+        rating: 4.3,
+        distance: "0.7 km",
+        priceLevel: "$$",
+        address: "Talcahuano 937",
+      },
+      {
+        id: "3",
+        name: "La Mezzetta",
+        rating: 4.4,
+        distance: "1.2 km",
+        priceLevel: "$$",
+        address: "Av. Álvarez Thomas 1321",
+      },
+      {
+        id: "4",
+        name: "Banchero",
+        rating: 4.2,
+        distance: "1.5 km",
+        priceLevel: "$",
+        address: "Av. Corrientes 1300",
+      },
+      {
+        id: "5",
+        name: "Las Cuartetas",
+        rating: 4.1,
+        distance: "0.4 km",
+        priceLevel: "$$",
+        address: "Av. Corrientes 838",
+      },
     ],
     sushi: [
-      { id: "1", name: "Osaka", rating: 4.6, distance: "0.5 km", priceLevel: "$$$", address: "Soler 5608" },
-      { id: "2", name: "Sushi Pop", rating: 4.4, distance: "0.8 km", priceLevel: "$$", address: "Costa Rica 4681" },
-      { id: "3", name: "Green Bamboo", rating: 4.3, distance: "1.0 km", priceLevel: "$$", address: "Costa Rica 5802" },
-      { id: "4", name: "Dashi", rating: 4.5, distance: "1.3 km", priceLevel: "$$$", address: "Thames 1747" },
+      {
+        id: "1",
+        name: "Osaka",
+        rating: 4.6,
+        distance: "0.5 km",
+        priceLevel: "$$$",
+        address: "Soler 5608",
+      },
+      {
+        id: "2",
+        name: "Sushi Pop",
+        rating: 4.4,
+        distance: "0.8 km",
+        priceLevel: "$$",
+        address: "Costa Rica 4681",
+      },
+      {
+        id: "3",
+        name: "Green Bamboo",
+        rating: 4.3,
+        distance: "1.0 km",
+        priceLevel: "$$",
+        address: "Costa Rica 5802",
+      },
+      {
+        id: "4",
+        name: "Dashi",
+        rating: 4.5,
+        distance: "1.3 km",
+        priceLevel: "$$$",
+        address: "Thames 1747",
+      },
     ],
     ramen: [
-      { id: "1", name: "Fukuro Noodle Bar", rating: 4.7, distance: "0.4 km", priceLevel: "$$", address: "Costa Rica 5514" },
-      { id: "2", name: "Ramen House", rating: 4.2, distance: "1.1 km", priceLevel: "$$", address: "Thames 1810" },
-      { id: "3", name: "Ichisou", rating: 4.4, distance: "0.9 km", priceLevel: "$$", address: "Gurruchaga 1587" },
+      {
+        id: "1",
+        name: "Fukuro Noodle Bar",
+        rating: 4.7,
+        distance: "0.4 km",
+        priceLevel: "$$",
+        address: "Costa Rica 5514",
+      },
+      {
+        id: "2",
+        name: "Ramen House",
+        rating: 4.2,
+        distance: "1.1 km",
+        priceLevel: "$$",
+        address: "Thames 1810",
+      },
+      {
+        id: "3",
+        name: "Ichisou",
+        rating: 4.4,
+        distance: "0.9 km",
+        priceLevel: "$$",
+        address: "Gurruchaga 1587",
+      },
     ],
     burger: [
-      { id: "1", name: "Burger Joint", rating: 4.5, distance: "0.3 km", priceLevel: "$$", address: "J. L. Borges 1766" },
-      { id: "2", name: "Deniro", rating: 4.4, distance: "0.6 km", priceLevel: "$$", address: "Godoy Cruz 1823" },
-      { id: "3", name: "Dellepiane", rating: 4.3, distance: "0.9 km", priceLevel: "$$", address: "Av. Libertador 4791" },
-      { id: "4", name: "Williamsburg", rating: 4.2, distance: "1.2 km", priceLevel: "$$", address: "Humboldt 1550" },
+      {
+        id: "1",
+        name: "Burger Joint",
+        rating: 4.5,
+        distance: "0.3 km",
+        priceLevel: "$$",
+        address: "J. L. Borges 1766",
+      },
+      {
+        id: "2",
+        name: "Deniro",
+        rating: 4.4,
+        distance: "0.6 km",
+        priceLevel: "$$",
+        address: "Godoy Cruz 1823",
+      },
+      {
+        id: "3",
+        name: "Dellepiane",
+        rating: 4.3,
+        distance: "0.9 km",
+        priceLevel: "$$",
+        address: "Av. Libertador 4791",
+      },
+      {
+        id: "4",
+        name: "Williamsburg",
+        rating: 4.2,
+        distance: "1.2 km",
+        priceLevel: "$$",
+        address: "Humboldt 1550",
+      },
     ],
     empanada: [
-      { id: "1", name: "El Sanjuanino", rating: 4.4, distance: "0.2 km", priceLevel: "$", address: "Posadas 1515" },
-      { id: "2", name: "La Cocina", rating: 4.3, distance: "0.5 km", priceLevel: "$", address: "Pueyrredón 1508" },
-      { id: "3", name: "El Noble", rating: 4.0, distance: "0.8 km", priceLevel: "$", address: "Av. Santa Fe 1234" },
-      { id: "4", name: "La Continental", rating: 4.1, distance: "0.6 km", priceLevel: "$", address: "Av. Callao 1302" },
+      {
+        id: "1",
+        name: "El Sanjuanino",
+        rating: 4.4,
+        distance: "0.2 km",
+        priceLevel: "$",
+        address: "Posadas 1515",
+      },
+      {
+        id: "2",
+        name: "La Cocina",
+        rating: 4.3,
+        distance: "0.5 km",
+        priceLevel: "$",
+        address: "Pueyrredón 1508",
+      },
+      {
+        id: "3",
+        name: "El Noble",
+        rating: 4.0,
+        distance: "0.8 km",
+        priceLevel: "$",
+        address: "Av. Santa Fe 1234",
+      },
+      {
+        id: "4",
+        name: "La Continental",
+        rating: 4.1,
+        distance: "0.6 km",
+        priceLevel: "$",
+        address: "Av. Callao 1302",
+      },
     ],
   };
 

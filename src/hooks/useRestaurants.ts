@@ -16,7 +16,12 @@ interface UseRestaurantsReturn extends UseRestaurantsState {
 }
 
 export function useRestaurants(category: string): UseRestaurantsReturn {
-  const { location, isLoading: locationLoading, error: locationError, requestLocation } = useLocation();
+  const {
+    location,
+    isLoading: locationLoading,
+    error: locationError,
+    requestLocation,
+  } = useLocation();
 
   const [state, setState] = useState<UseRestaurantsState>({
     restaurants: [],
@@ -82,12 +87,15 @@ export function useRestaurants(category: string): UseRestaurantsReturn {
     }
   };
 
-  const search = useCallback(async (cat: string) => {
-    setCurrentCategory(cat);
-    if (location) {
-      await searchRestaurants(cat);
-    }
-  }, [location]);
+  const search = useCallback(
+    async (cat: string) => {
+      setCurrentCategory(cat);
+      if (location) {
+        await searchRestaurants(cat);
+      }
+    },
+    [location]
+  );
 
   const retry = useCallback(async () => {
     if (!location) {

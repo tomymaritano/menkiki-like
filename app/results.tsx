@@ -18,12 +18,6 @@ function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
     Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${query}`);
   };
 
-  const handleCall = () => {
-    if (restaurant.phone) {
-      Linking.openURL(`tel:${restaurant.phone}`);
-    }
-  };
-
   return (
     <TouchableOpacity style={styles.card} onPress={handlePress} activeOpacity={0.7}>
       <View style={styles.cardContent}>
@@ -68,7 +62,8 @@ function EmptyState({ category }: { category: string }) {
     <View style={styles.centerState}>
       <Text style={styles.emptyTitle}>No restaurants found</Text>
       <Text style={styles.emptyText}>
-        We couldn't find any {category.toLowerCase()} places nearby. Try a different category or expand your search area.
+        We couldn't find any {category.toLowerCase()} places nearby. Try a different category or
+        expand your search area.
       </Text>
       <TouchableOpacity style={styles.emptyButton} onPress={() => router.back()}>
         <Text style={styles.emptyButtonText}>Try another photo</Text>

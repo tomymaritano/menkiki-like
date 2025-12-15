@@ -1,10 +1,4 @@
-export const FOOD_CATEGORIES = [
-  "pizza",
-  "sushi",
-  "ramen",
-  "burger",
-  "empanada",
-] as const;
+export const FOOD_CATEGORIES = ["pizza", "sushi", "ramen", "burger", "empanada"] as const;
 
 export const CATEGORY_KEYWORDS: Record<string, string> = {
   pizza: "pizza",

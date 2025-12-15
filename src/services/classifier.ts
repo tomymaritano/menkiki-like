@@ -1,9 +1,5 @@
-import * as ImageManipulator from "expo-image-manipulator";
 import { CONFIDENCE_THRESHOLD } from "../constants";
 import type { ClassificationResult, FoodCategory } from "../types";
-
-// Model configuration
-const IMAGE_SIZE = 224;
 
 // Food category labels
 const CATEGORY_LABELS: FoodCategory[] = ["pizza", "sushi", "ramen", "burger", "empanada"];
@@ -13,7 +9,7 @@ const CATEGORY_LABELS: FoodCategory[] = ["pizza", "sushi", "ramen", "burger", "e
  * For v1, we use a mock classifier. In production, load a real TFLite model.
  */
 export async function loadModel(): Promise<void> {
-  console.log("Model loader initialized (using mock classifier for v1)");
+  // Model initialization placeholder
 }
 
 /**
@@ -23,8 +19,8 @@ function hashString(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32bit integer
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
   }
   return Math.abs(hash);
 }
@@ -33,26 +29,18 @@ function hashString(str: string): number {
  * Run classification on an image
  */
 export async function classifyImage(uri: string): Promise<ClassificationResult> {
-  try {
-    // Simulate processing time
-    await new Promise((resolve) => setTimeout(resolve, 800 + Math.random() * 400));
+  // Simulate processing time
+  await new Promise((resolve) => setTimeout(resolve, 800 + Math.random() * 400));
 
-    // Use image URI to generate consistent-ish results
-    // Different photos should give different categories
-    const hash = hashString(uri + Date.now().toString());
-    const categoryIndex = hash % CATEGORY_LABELS.length;
+  // Use image URI + timestamp to generate varied results
+  const hash = hashString(uri + Date.now().toString());
+  const categoryIndex = hash % CATEGORY_LABELS.length;
+  const confidenceBase = 75 + (hash % 20);
 
-    // Generate confidence based on hash
-    const confidenceBase = 75 + (hash % 20); // 75-94%
-
-    return {
-      category: CATEGORY_LABELS[categoryIndex],
-      confidence: confidenceBase,
-    };
-  } catch (error) {
-    console.error("Classification failed:", error);
-    throw error;
-  }
+  return {
+    category: CATEGORY_LABELS[categoryIndex],
+    confidence: confidenceBase,
+  };
 }
 
 /**

@@ -1,27 +1,13 @@
 import { useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useClassifier } from "../src/hooks/useClassifier";
 import { COLORS } from "../src/constants";
 
 export default function DetectionScreen() {
   const { photoUri } = useLocalSearchParams<{ photoUri: string }>();
-  const {
-    isReady,
-    isClassifying,
-    result,
-    displayName,
-    isLowConfidence,
-    error,
-    classify,
-  } = useClassifier();
+  const { isReady, isClassifying, result, displayName, isLowConfidence, error, classify } =
+    useClassifier();
 
   useEffect(() => {
     if (isReady && photoUri) {
@@ -57,7 +43,10 @@ export default function DetectionScreen() {
       return (
         <>
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={() => photoUri && classify(photoUri)}>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => photoUri && classify(photoUri)}
+          >
             <Text style={styles.retryButtonText}>Try again</Text>
           </TouchableOpacity>
         </>
@@ -74,9 +63,7 @@ export default function DetectionScreen() {
               {result.confidence}% confidence
             </Text>
             {isLowConfidence && (
-              <Text style={styles.lowConfidenceWarning}>
-                Not very sure — try a clearer photo
-              </Text>
+              <Text style={styles.lowConfidenceWarning}>Not very sure — try a clearer photo</Text>
             )}
           </View>
         </>
@@ -90,11 +77,7 @@ export default function DetectionScreen() {
     <View style={styles.container}>
       <View style={styles.imageContainer}>
         {photoUri ? (
-          <Image
-            source={{ uri: photoUri }}
-            style={styles.image}
-            resizeMode="cover"
-          />
+          <Image source={{ uri: photoUri }} style={styles.image} resizeMode="cover" />
         ) : (
           <View style={styles.imagePlaceholder}>
             <Text style={styles.placeholderText}>No photo</Text>
@@ -106,10 +89,7 @@ export default function DetectionScreen() {
 
       <View style={styles.actions}>
         <TouchableOpacity
-          style={[
-            styles.primaryButton,
-            (!result || isClassifying) && styles.buttonDisabled,
-          ]}
+          style={[styles.primaryButton, (!result || isClassifying) && styles.buttonDisabled]}
           onPress={handleFindPlaces}
           disabled={!result || isClassifying}
         >
