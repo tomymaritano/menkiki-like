@@ -106,7 +106,7 @@ export async function searchNearbyRestaurants(
 
     if (data.status !== "OK" && data.status !== "ZERO_RESULTS") {
       console.error("Places API error:", data.status, data.error_message);
-      return getMockRestaurants(location, category);
+      return getMockRestaurants(category);
     }
 
     // Transform and rank results
