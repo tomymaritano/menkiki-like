@@ -1,12 +1,14 @@
 import { useState, useCallback } from "react";
 import * as Location from "expo-location";
 import type { Location as LocationType } from "../types";
+import { DEFAULT_LOCATION } from "../constants";
 
 interface UseLocationState {
   location: LocationType | null;
   isLoading: boolean;
   error: string | null;
   permissionStatus: Location.PermissionStatus | null;
+  isUsingDefault: boolean;
 }
 
 interface UseLocationReturn extends UseLocationState {
@@ -20,7 +22,20 @@ export function useLocation(): UseLocationReturn {
     isLoading: false,
     error: null,
     permissionStatus: null,
+    isUsingDefault: false,
   });
+
+  const setDefaultLocation = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      isLoading: false,
+      isUsingDefault: true,
+      location: {
+        latitude: DEFAULT_LOCATION.latitude,
+        longitude: DEFAULT_LOCATION.longitude,
+      },
+    }));
+  }, []);
 
   const requestLocation = useCallback(async () => {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
@@ -30,10 +45,11 @@ export function useLocation(): UseLocationReturn {
       setState((prev) => ({ ...prev, permissionStatus: status }));
 
       if (status !== "granted") {
+        // Use default location (Escobar) when permission denied
+        setDefaultLocation();
         setState((prev) => ({
           ...prev,
-          isLoading: false,
-          error: "Location permission denied",
+          error: `Using default location (${DEFAULT_LOCATION.name})`,
         }));
         return;
       }
@@ -45,6 +61,7 @@ export function useLocation(): UseLocationReturn {
       setState((prev) => ({
         ...prev,
         isLoading: false,
+        isUsingDefault: false,
         location: {
           latitude: currentLocation.coords.latitude,
           longitude: currentLocation.coords.longitude,
@@ -52,13 +69,14 @@ export function useLocation(): UseLocationReturn {
       }));
     } catch (error) {
       console.error("Failed to get location:", error);
+      // Fallback to default location on error
+      setDefaultLocation();
       setState((prev) => ({
         ...prev,
-        isLoading: false,
-        error: "Failed to get location",
+        error: `Using default location (${DEFAULT_LOCATION.name})`,
       }));
     }
-  }, []);
+  }, [setDefaultLocation]);
 
   const refreshLocation = useCallback(async () => {
     if (state.permissionStatus === "granted") {
@@ -72,6 +90,7 @@ export function useLocation(): UseLocationReturn {
         setState((prev) => ({
           ...prev,
           isLoading: false,
+          isUsingDefault: false,
           location: {
             latitude: currentLocation.coords.latitude,
             longitude: currentLocation.coords.longitude,
@@ -79,14 +98,17 @@ export function useLocation(): UseLocationReturn {
         }));
       } catch (error) {
         console.error("Failed to refresh location:", error);
+        setDefaultLocation();
         setState((prev) => ({
           ...prev,
-          isLoading: false,
-          error: "Failed to refresh location",
+          error: `Using default location (${DEFAULT_LOCATION.name})`,
         }));
       }
+    } else {
+      // If permission not granted, use default
+      setDefaultLocation();
     }
-  }, [state.permissionStatus]);
+  }, [state.permissionStatus, setDefaultLocation]);
 
   return {
     ...state,

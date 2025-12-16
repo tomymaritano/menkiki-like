@@ -1,122 +1,65 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  Linking,
-  Modal,
-  Pressable,
+  RefreshControl,
 } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
-import { useRestaurants, useFavorites } from "../src/hooks";
-import { COLORS } from "../src/constants";
-import { SkeletonList, FadeIn } from "../src/components";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ArrowLeft, Star, Utensils } from "lucide-react-native";
+import { useRestaurants, useFavorites, useHaptics, useToast } from "../src/hooks";
+import { COLORS, SPACING, RADIUS, SHADOWS, TYPOGRAPHY } from "../src/constants";
+import { SkeletonList, FadeIn, GlassButton, EmptyState, Logo, ActionSheet, AnimatedHeart } from "../src/components";
 import type { Restaurant } from "../src/types";
-
-interface ActionSheetProps {
-  visible: boolean;
-  restaurant: Restaurant | null;
-  onClose: () => void;
-}
-
-function ActionSheet({ visible, restaurant, onClose }: ActionSheetProps) {
-  if (!restaurant) return null;
-
-  const handleOpenMaps = () => {
-    const query = encodeURIComponent(`${restaurant.name} ${restaurant.address} Buenos Aires`);
-    Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${query}`);
-    onClose();
-  };
-
-  const handleCall = () => {
-    // Mock phone numbers for demo
-    const mockPhones: Record<string, string> = {
-      "Pizzeria Güerrin": "+54 11 4371-8141",
-      "El Cuartito": "+54 11 4816-1758",
-      Osaka: "+54 11 4775-6964",
-      "Burger Joint": "+54 11 4833-5151",
-    };
-    const phone = restaurant.phone || mockPhones[restaurant.name] || null;
-
-    if (phone) {
-      Linking.openURL(`tel:${phone.replace(/\s/g, "")}`);
-    }
-    onClose();
-  };
-
-  const hasPhone =
-    restaurant.phone ||
-    ["Pizzeria Güerrin", "El Cuartito", "Osaka", "Burger Joint"].includes(restaurant.name);
-
-  return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.modalOverlay} onPress={onClose}>
-        <View style={styles.actionSheet}>
-          <View style={styles.actionSheetHandle} />
-          <Text style={styles.actionSheetTitle}>{restaurant.name}</Text>
-          <Text style={styles.actionSheetSubtitle}>{restaurant.address}</Text>
-
-          <TouchableOpacity style={styles.actionButton} onPress={handleOpenMaps}>
-            <Text style={styles.actionButtonIcon}>📍</Text>
-            <Text style={styles.actionButtonText}>Open in Maps</Text>
-          </TouchableOpacity>
-
-          {hasPhone && (
-            <TouchableOpacity style={styles.actionButton} onPress={handleCall}>
-              <Text style={styles.actionButtonIcon}>📞</Text>
-              <Text style={styles.actionButtonText}>Call Restaurant</Text>
-            </TouchableOpacity>
-          )}
-
-          <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
-      </Pressable>
-    </Modal>
-  );
-}
 
 function RestaurantCard({
   restaurant,
   onPress,
   isFavorite,
   onToggleFavorite,
+  index,
 }: {
   restaurant: Restaurant;
   onPress: () => void;
   isFavorite: boolean;
   onToggleFavorite: () => void;
+  index: number;
 }) {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
-      <View style={styles.cardContent}>
-        <Text style={styles.name}>{restaurant.name}</Text>
-        <View style={styles.meta}>
-          <Text style={styles.rating}>★ {restaurant.rating.toFixed(1)}</Text>
-          <Text style={styles.dot}>•</Text>
-          <Text style={styles.distance}>{restaurant.distance}</Text>
-          <Text style={styles.dot}>•</Text>
-          <Text style={styles.price}>{restaurant.priceLevel}</Text>
+    <FadeIn delay={index * 60} type="spring" direction="up">
+      <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+        <View style={styles.cardIcon}>
+          <Utensils size={24} color={COLORS.accent} />
         </View>
-        <Text style={styles.address}>{restaurant.address}</Text>
-      </View>
-      <TouchableOpacity
-        onPress={onToggleFavorite}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-      >
-        <Text style={styles.heart}>{isFavorite ? "❤️" : "🤍"}</Text>
+        <View style={styles.cardContent}>
+          <Text style={styles.name} numberOfLines={1}>{restaurant.name}</Text>
+          <View style={styles.meta}>
+            <View style={styles.ratingBadge}>
+              <Star size={12} color={COLORS.warning} fill={COLORS.warning} />
+              <Text style={styles.ratingText}>{restaurant.rating.toFixed(1)}</Text>
+            </View>
+            <Text style={styles.distance}>{restaurant.distance}</Text>
+            <Text style={styles.price}>{restaurant.priceLevel}</Text>
+          </View>
+          <Text style={styles.address} numberOfLines={1}>{restaurant.address}</Text>
+        </View>
+        <AnimatedHeart
+          isFavorite={isFavorite}
+          onToggle={onToggleFavorite}
+          size={20}
+        />
       </TouchableOpacity>
-    </TouchableOpacity>
+    </FadeIn>
   );
 }
 
 function LoadingState() {
   return (
     <View style={styles.loadingState}>
-      <Text style={styles.loadingText}>Finding nearby places...</Text>
+      <Text style={styles.loadingText}>Hunting down the best spots...</Text>
       <SkeletonList />
     </View>
   );
@@ -125,35 +68,65 @@ function LoadingState() {
 function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <View style={styles.centerState}>
-      <Text style={styles.errorTitle}>Oops!</Text>
-      <Text style={styles.errorText}>{message}</Text>
-      <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
-        <Text style={styles.retryButtonText}>Try again</Text>
-      </TouchableOpacity>
+      <Text style={styles.errorTitle}>Whoops!</Text>
+      <Text style={styles.errorText}>Something went sideways. Let's give it another shot!</Text>
+      <GlassButton title="Try again" onPress={onRetry} variant="primary" />
     </View>
   );
 }
 
-function EmptyState({ category }: { category: string }) {
+function ResultsEmptyState({ category }: { category: string }) {
   return (
-    <View style={styles.centerState}>
-      <Text style={styles.emptyTitle}>No restaurants found</Text>
-      <Text style={styles.emptyText}>
-        We couldn't find any {category.toLowerCase()} places nearby. Try a different category or
-        expand your search area.
-      </Text>
-      <TouchableOpacity style={styles.emptyButton} onPress={() => router.back()}>
-        <Text style={styles.emptyButtonText}>Try another photo</Text>
-      </TouchableOpacity>
-    </View>
+    <EmptyState
+      Icon={Utensils}
+      title="Nothing nearby"
+      description={`Looks like ${category.toLowerCase()} spots are hiding! Try scanning something else or explore a new area`}
+      action={
+        <GlassButton
+          title="Scan something new"
+          onPress={() => router.canGoBack() ? router.back() : router.replace("/")}
+          variant="secondary"
+        />
+      }
+    />
   );
 }
 
 export default function ResultsScreen() {
   const { category } = useLocalSearchParams<{ category: string }>();
+  const insets = useSafeAreaInsets();
   const { restaurants, isLoading, error, retry } = useRestaurants(category || "Pizza");
   const { isFavorite, toggleFavorite } = useFavorites();
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const haptics = useHaptics();
+  const { showToast } = useToast();
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    haptics.light();
+    await retry();
+    setRefreshing(false);
+    showToast("Results updated", "info");
+  }, [retry, haptics, showToast]);
+
+  const handleBack = () => {
+    haptics.light();
+    router.canGoBack() ? router.back() : router.replace("/");
+  };
+
+  const handleToggleFavorite = (restaurant: Restaurant) => {
+    const willBeFavorite = !isFavorite(restaurant.id);
+    toggleFavorite(restaurant);
+    if (willBeFavorite) {
+      showToast(`${restaurant.name} added to favorites`, "success");
+    }
+  };
+
+  const handleSelectRestaurant = (restaurant: Restaurant) => {
+    haptics.selection();
+    setSelectedRestaurant(restaurant);
+  };
 
   const renderContent = () => {
     if (isLoading) {
@@ -165,38 +138,50 @@ export default function ResultsScreen() {
     }
 
     if (restaurants.length === 0) {
-      return <EmptyState category={category || "Food"} />;
+      return <ResultsEmptyState category={category || "Food"} />;
     }
 
     return (
-      <FadeIn>
-        <FlatList
-          data={restaurants}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <RestaurantCard
-              restaurant={item}
-              onPress={() => setSelectedRestaurant(item)}
-              isFavorite={isFavorite(item.id)}
-              onToggleFavorite={() => toggleFavorite(item)}
-            />
-          )}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-        />
-      </FadeIn>
+      <FlatList
+        data={restaurants}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item, index }) => (
+          <RestaurantCard
+            restaurant={item}
+            onPress={() => handleSelectRestaurant(item)}
+            isFavorite={isFavorite(item.id)}
+            onToggleFavorite={() => handleToggleFavorite(item)}
+            index={index}
+          />
+        )}
+        contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={COLORS.accent}
+            colors={[COLORS.accent]}
+          />
+        }
+      />
     );
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Text style={styles.backButton}>← Back</Text>
-        </TouchableOpacity>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={styles.headerTop}>
+          <TouchableOpacity
+            onPress={handleBack}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            style={styles.backButton}
+          >
+            <ArrowLeft size={20} color={COLORS.secondary} />
+          </TouchableOpacity>
+          <Logo size="sm" showIcon={false} />
+          <View style={styles.headerSpacer} />
+        </View>
         <Text style={styles.title}>{category || "Food"} nearby</Text>
         {!isLoading && restaurants.length > 0 && (
           <Text style={styles.subtitle}>{restaurants.length} places found</Text>
@@ -209,6 +194,7 @@ export default function ResultsScreen() {
         visible={!!selectedRestaurant}
         restaurant={selectedRestaurant}
         onClose={() => setSelectedRestaurant(null)}
+        bottomInset={insets.bottom}
       />
     </View>
   );
@@ -220,78 +206,106 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   header: {
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingHorizontal: SPACING[5],
+    paddingBottom: SPACING[4],
+  },
+  headerTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: SPACING[3],
   },
   backButton: {
-    color: COLORS.secondary,
-    fontSize: 16,
-    marginBottom: 12,
+    width: 40,
+    height: 40,
+    borderRadius: RADIUS.full,
+    backgroundColor: COLORS.surface,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerSpacer: {
+    width: 40,
   },
   title: {
     color: COLORS.primary,
-    fontSize: 32,
-    fontWeight: "700",
+    fontSize: TYPOGRAPHY.size["4xl"],
+    fontWeight: TYPOGRAPHY.weight.bold,
   },
   subtitle: {
     color: COLORS.secondary,
-    fontSize: 14,
-    marginTop: 4,
+    fontSize: TYPOGRAPHY.size.sm,
+    marginTop: SPACING[1],
   },
   list: {
-    paddingHorizontal: 20,
-    paddingBottom: 40,
-    gap: 12,
+    paddingHorizontal: SPACING[5],
+    paddingBottom: SPACING[10],
+    gap: SPACING[3],
   },
   card: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: COLORS.glass.background,
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    borderColor: COLORS.glass.border,
+    padding: SPACING[4],
     flexDirection: "row",
     alignItems: "center",
+    ...SHADOWS.md,
+  },
+  cardIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.accentMuted,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: SPACING[3],
   },
   cardContent: {
     flex: 1,
   },
   name: {
     color: COLORS.primary,
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 4,
+    fontSize: TYPOGRAPHY.size.lg,
+    fontWeight: TYPOGRAPHY.weight.semibold,
+    marginBottom: SPACING[1],
   },
   meta: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 4,
+    gap: SPACING[2],
+    marginBottom: SPACING[1],
   },
-  rating: {
+  ratingBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.warningMuted,
+    paddingHorizontal: SPACING[2],
+    paddingVertical: SPACING[1],
+    borderRadius: RADIUS.sm,
+    gap: SPACING[1],
+  },
+  ratingText: {
     color: COLORS.warning,
-    fontSize: 14,
-  },
-  dot: {
-    color: COLORS.secondary,
-    marginHorizontal: 6,
+    fontSize: TYPOGRAPHY.size.sm,
+    fontWeight: TYPOGRAPHY.weight.semibold,
   },
   distance: {
     color: COLORS.secondary,
-    fontSize: 14,
+    fontSize: TYPOGRAPHY.size.sm,
   },
   price: {
     color: COLORS.secondary,
-    fontSize: 14,
+    fontSize: TYPOGRAPHY.size.sm,
   },
   address: {
-    color: "#666",
-    fontSize: 13,
+    color: COLORS.tertiary,
+    fontSize: TYPOGRAPHY.size.sm,
   },
-  arrow: {
-    color: COLORS.secondary,
-    fontSize: 20,
-  },
-  heart: {
-    fontSize: 20,
-    marginLeft: 8,
+  heartButton: {
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingState: {
     flex: 1,
@@ -300,120 +314,25 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 40,
+    paddingHorizontal: SPACING[10],
   },
   loadingText: {
     color: COLORS.secondary,
-    fontSize: 16,
+    fontSize: TYPOGRAPHY.size.md,
     textAlign: "center",
-    marginBottom: 20,
+    marginBottom: SPACING[5],
   },
   errorTitle: {
     color: COLORS.primary,
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 8,
+    fontSize: TYPOGRAPHY.size["2xl"],
+    fontWeight: TYPOGRAPHY.weight.semibold,
+    marginBottom: SPACING[2],
   },
   errorText: {
     color: COLORS.secondary,
-    fontSize: 16,
+    fontSize: TYPOGRAPHY.size.md,
     textAlign: "center",
     lineHeight: 24,
-    marginBottom: 24,
-  },
-  retryButton: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 32,
-    paddingVertical: 14,
-    borderRadius: 10,
-  },
-  retryButtonText: {
-    color: COLORS.background,
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  emptyTitle: {
-    color: COLORS.primary,
-    fontSize: 20,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-  emptyText: {
-    color: COLORS.secondary,
-    fontSize: 16,
-    textAlign: "center",
-    lineHeight: 24,
-    marginBottom: 24,
-  },
-  emptyButton: {
-    backgroundColor: COLORS.surface,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  emptyButtonText: {
-    color: COLORS.primary,
-    fontSize: 16,
-  },
-  // Action Sheet styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
-  },
-  actionSheet: {
-    backgroundColor: COLORS.surface,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    paddingBottom: 40,
-  },
-  actionSheetHandle: {
-    width: 40,
-    height: 4,
-    backgroundColor: COLORS.secondary,
-    borderRadius: 2,
-    alignSelf: "center",
-    marginBottom: 20,
-  },
-  actionSheetTitle: {
-    color: COLORS.primary,
-    fontSize: 20,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  actionSheetSubtitle: {
-    color: COLORS.secondary,
-    fontSize: 14,
-    textAlign: "center",
-    marginTop: 4,
-    marginBottom: 20,
-  },
-  actionButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: COLORS.background,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 10,
-  },
-  actionButtonIcon: {
-    fontSize: 20,
-    marginRight: 12,
-  },
-  actionButtonText: {
-    color: COLORS.primary,
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  cancelButton: {
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 10,
-  },
-  cancelButtonText: {
-    color: COLORS.secondary,
-    fontSize: 16,
-    textAlign: "center",
+    marginBottom: SPACING[6],
   },
 });

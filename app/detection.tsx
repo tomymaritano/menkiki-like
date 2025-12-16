@@ -1,15 +1,21 @@
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { useClassifier, useHistory } from "../src/hooks";
-import { COLORS } from "../src/constants";
-import { PulsingDot, FadeIn } from "../src/components";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { RefreshCw, MapPin, ArrowLeft } from "lucide-react-native";
+import { useClassifier, useHistory, useHaptics } from "../src/hooks";
+import { COLORS, SPACING, RADIUS, SHADOWS, TYPOGRAPHY } from "../src/constants";
+import { FadeIn, GlassButton, Logo, AILoadingAnimation, SuccessCelebration } from "../src/components";
 
 export default function DetectionScreen() {
   const { photoUri } = useLocalSearchParams<{ photoUri: string }>();
+  const insets = useSafeAreaInsets();
   const { isReady, isClassifying, result, displayName, isLowConfidence, error, classify } =
     useClassifier();
   const { addToHistory } = useHistory();
+  const haptics = useHaptics();
+  const [showCelebration, setShowCelebration] = useState(false);
+  const hasShownCelebration = useRef(false);
 
   useEffect(() => {
     if (isReady && photoUri) {
@@ -17,8 +23,18 @@ export default function DetectionScreen() {
     }
   }, [isReady, photoUri, classify]);
 
+  // Trigger celebration when detection succeeds
+  useEffect(() => {
+    if (result && displayName && !isLowConfidence && !hasShownCelebration.current) {
+      hasShownCelebration.current = true;
+      haptics.success();
+      setShowCelebration(true);
+    }
+  }, [result, displayName, isLowConfidence]);
+
   const handleFindPlaces = async () => {
     if (!displayName) return;
+    haptics.success();
     await addToHistory(displayName);
     router.push({
       pathname: "/results",
@@ -27,22 +43,30 @@ export default function DetectionScreen() {
   };
 
   const handleRetake = () => {
-    router.back();
+    haptics.light();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/");
+    }
+  };
+
+  const handleBack = () => {
+    haptics.light();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/");
+    }
   };
 
   const renderStatus = () => {
     if (!isReady || isClassifying) {
       return (
-        <View style={styles.loadingContainer}>
-          <View style={styles.pulsingRow}>
-            <PulsingDot size={10} color={COLORS.primary} />
-            <PulsingDot size={10} color={COLORS.primary} />
-            <PulsingDot size={10} color={COLORS.primary} />
-          </View>
-          <Text style={styles.statusText}>
-            {!isReady ? "Loading AI model..." : "Analyzing image..."}
-          </Text>
-        </View>
+        <AILoadingAnimation
+          message={!isReady ? "Warming up the AI..." : "What have we here?"}
+          subMessage={!isReady ? "Almost ready to work magic" : "Our AI chef is taking a closer look"}
+        />
       );
     }
 
@@ -52,8 +76,12 @@ export default function DetectionScreen() {
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity
             style={styles.retryButton}
-            onPress={() => photoUri && classify(photoUri)}
+            onPress={() => {
+              haptics.medium();
+              photoUri && classify(photoUri);
+            }}
           >
+            <RefreshCw size={16} color={COLORS.primary} />
             <Text style={styles.retryButtonText}>Try again</Text>
           </TouchableOpacity>
         </FadeIn>
@@ -70,7 +98,7 @@ export default function DetectionScreen() {
               {result.confidence}% confidence
             </Text>
             {isLowConfidence && (
-              <Text style={styles.lowConfidenceWarning}>Not very sure — try a clearer photo</Text>
+              <Text style={styles.lowConfidenceWarning}>Hmm, not 100% sure — a clearer shot might help!</Text>
             )}
           </View>
         </FadeIn>
@@ -81,7 +109,21 @@ export default function DetectionScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      {showCelebration && <SuccessCelebration onComplete={() => setShowCelebration(false)} />}
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={handleBack}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          style={styles.backButton}
+        >
+          <ArrowLeft size={20} color={COLORS.secondary} />
+        </TouchableOpacity>
+        <Logo size="sm" showIcon={false} />
+        <View style={styles.headerSpacer} />
+      </View>
+
       <View style={styles.imageContainer}>
         {photoUri ? (
           <Image source={{ uri: photoUri }} style={styles.image} resizeMode="cover" />
@@ -95,13 +137,15 @@ export default function DetectionScreen() {
       <View style={styles.resultContainer}>{renderStatus()}</View>
 
       <View style={styles.actions}>
-        <TouchableOpacity
-          style={[styles.primaryButton, (!result || isClassifying) && styles.buttonDisabled]}
+        <GlassButton
+          title="Find nearby places"
           onPress={handleFindPlaces}
+          variant="primary"
+          size="lg"
+          fullWidth
           disabled={!result || isClassifying}
-        >
-          <Text style={styles.primaryButtonText}>Find nearby places</Text>
-        </TouchableOpacity>
+          icon={MapPin}
+        />
 
         <TouchableOpacity style={styles.secondaryButton} onPress={handleRetake}>
           <Text style={styles.secondaryButtonText}>Retake photo</Text>
@@ -115,115 +159,109 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
-    paddingTop: 60,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: SPACING[5],
+    paddingVertical: SPACING[3],
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: RADIUS.full,
+    backgroundColor: COLORS.surface,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerSpacer: {
+    width: 40,
   },
   imageContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
+    paddingHorizontal: SPACING[5],
+    marginBottom: SPACING[6],
   },
   image: {
     height: 300,
-    borderRadius: 16,
+    borderRadius: RADIUS.xl,
     backgroundColor: COLORS.surface,
   },
   imagePlaceholder: {
     height: 300,
     backgroundColor: COLORS.surface,
-    borderRadius: 16,
+    borderRadius: RADIUS.xl,
     justifyContent: "center",
     alignItems: "center",
   },
   placeholderText: {
     color: COLORS.secondary,
-    fontSize: 16,
+    fontSize: TYPOGRAPHY.size.md,
   },
   resultContainer: {
     alignItems: "center",
-    marginBottom: 40,
-    minHeight: 140,
+    marginBottom: SPACING[10],
+    minHeight: 180,
     justifyContent: "center",
-    paddingHorizontal: 20,
-  },
-  loadingContainer: {
-    alignItems: "center",
-  },
-  pulsingRow: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  statusText: {
-    color: COLORS.secondary,
-    fontSize: 16,
-    marginTop: 16,
+    paddingHorizontal: SPACING[5],
   },
   label: {
     color: COLORS.secondary,
-    fontSize: 14,
+    fontSize: TYPOGRAPHY.size.sm,
     textTransform: "uppercase",
     letterSpacing: 1,
   },
   foodName: {
     color: COLORS.primary,
-    fontSize: 48,
-    fontWeight: "700",
-    marginTop: 8,
+    fontSize: TYPOGRAPHY.size["5xl"],
+    fontWeight: TYPOGRAPHY.weight.bold,
+    marginTop: SPACING[2],
   },
   confidenceContainer: {
     alignItems: "center",
-    marginTop: 8,
+    marginTop: SPACING[2],
   },
   confidence: {
     color: COLORS.success,
-    fontSize: 16,
+    fontSize: TYPOGRAPHY.size.md,
   },
   lowConfidence: {
     color: COLORS.warning,
   },
   lowConfidenceWarning: {
     color: COLORS.secondary,
-    fontSize: 13,
-    marginTop: 4,
+    fontSize: TYPOGRAPHY.size.sm,
+    marginTop: SPACING[1],
   },
   errorText: {
     color: COLORS.error,
-    fontSize: 16,
+    fontSize: TYPOGRAPHY.size.md,
     textAlign: "center",
   },
   retryButton: {
-    marginTop: 16,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    marginTop: SPACING[4],
+    paddingHorizontal: SPACING[6],
+    paddingVertical: SPACING[3],
     backgroundColor: COLORS.surface,
-    borderRadius: 8,
+    borderRadius: RADIUS.md,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: SPACING[2],
   },
   retryButtonText: {
     color: COLORS.primary,
-    fontSize: 16,
+    fontSize: TYPOGRAPHY.size.md,
   },
   actions: {
-    paddingHorizontal: 20,
-    gap: 12,
-  },
-  primaryButton: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-  primaryButtonText: {
-    color: COLORS.background,
-    fontSize: 18,
-    fontWeight: "600",
+    paddingHorizontal: SPACING[5],
+    gap: SPACING[3],
   },
   secondaryButton: {
-    paddingVertical: 16,
+    paddingVertical: SPACING[4],
     alignItems: "center",
   },
   secondaryButtonText: {
     color: COLORS.secondary,
-    fontSize: 16,
+    fontSize: TYPOGRAPHY.size.md,
   },
 });

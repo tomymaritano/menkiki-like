@@ -1,13 +1,37 @@
-import { useRef, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { useRef, useState, useEffect } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { COLORS } from "../../src/constants";
+import { Camera } from "lucide-react-native";
+import { COLORS, SPACING, RADIUS, SHADOWS, TYPOGRAPHY, CAMERA_HUD, TAB_BAR } from "../../src/constants";
+import { GlassCard, GlassButton, Logo } from "../../src/components";
+import { useHaptics } from "../../src/hooks";
 
 export default function CameraScreen() {
   const cameraRef = useRef<CameraView>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [isCapturing, setIsCapturing] = useState(false);
+  const insets = useSafeAreaInsets();
+  const haptics = useHaptics();
+  const buttonScale = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    haptics.medium();
+    Animated.spring(buttonScale, {
+      toValue: 0.92,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(buttonScale, {
+      toValue: 1,
+      friction: 3,
+      useNativeDriver: true,
+    }).start();
+  };
 
   const handleCapture = async () => {
     if (!cameraRef.current || isCapturing) return;
@@ -36,7 +60,7 @@ export default function CameraScreen() {
     return (
       <View style={styles.container}>
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading camera...</Text>
+          <Text style={styles.loadingText}>Getting your camera ready...</Text>
         </View>
       </View>
     );
@@ -46,48 +70,77 @@ export default function CameraScreen() {
     return (
       <View style={styles.container}>
         <View style={styles.permissionContainer}>
-          <Text style={styles.emoji}>📷</Text>
-          <Text style={styles.title}>Camera Access</Text>
-          <Text style={styles.message}>
-            We need camera access to take photos of food and find nearby restaurants.
-          </Text>
-          <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
-            <Text style={styles.permissionButtonText}>Grant Access</Text>
-          </TouchableOpacity>
+          <GlassCard style={styles.permissionCard}>
+            <View style={styles.iconContainer}>
+              <Camera size={64} color={COLORS.accent} strokeWidth={1.5} />
+            </View>
+            <Text style={styles.title}>Ready to scan?</Text>
+            <Text style={styles.message}>
+              Let us see what you're craving and we'll find the perfect spot nearby
+            </Text>
+            <GlassButton
+              title="Enable Camera"
+              onPress={requestPermission}
+              variant="primary"
+              size="lg"
+              fullWidth
+            />
+          </GlassCard>
         </View>
       </View>
     );
   }
 
+  // Calculate dynamic spacing
+  const controlsHeight = 140 + TAB_BAR.height + TAB_BAR.marginBottom + insets.bottom;
+
   return (
     <View style={styles.container}>
       <CameraView ref={cameraRef} style={styles.camera} facing="back">
-        <View style={styles.overlay}>
+        {/* Top gradient for header readability */}
+        <LinearGradient
+          colors={["rgba(0,0,0,0.6)", "transparent"]}
+          style={[styles.topGradient, { paddingTop: insets.top }]}
+        >
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>Menkiki</Text>
-            <Text style={styles.headerSubtitle}>Point at food to find restaurants</Text>
+            <Logo size="md" showIcon={false} color={CAMERA_HUD.textPrimary} withShadow />
           </View>
+        </LinearGradient>
 
-          <View style={styles.focusContainer}>
-            <View style={styles.focusFrame}>
-              <View style={[styles.corner, styles.topLeft]} />
-              <View style={[styles.corner, styles.topRight]} />
-              <View style={[styles.corner, styles.bottomLeft]} />
-              <View style={[styles.corner, styles.bottomRight]} />
-            </View>
-            <Text style={styles.hint}>🍕 🍔 🍣 🍜</Text>
+        {/* Center content - minimal focus frame */}
+        <View style={styles.centerContent}>
+          <View style={styles.focusFrame}>
+            <View style={[styles.corner, styles.topLeft]} />
+            <View style={[styles.corner, styles.topRight]} />
+            <View style={[styles.corner, styles.bottomLeft]} />
+            <View style={[styles.corner, styles.bottomRight]} />
           </View>
         </View>
+
+        {/* Bottom gradient for controls */}
+        <LinearGradient
+          colors={["transparent", "rgba(0,0,0,0.7)", COLORS.background]}
+          locations={[0, 0.5, 1]}
+          style={[styles.bottomGradient, { height: controlsHeight }]}
+        />
       </CameraView>
 
-      <View style={styles.controls}>
+      {/* Controls area */}
+      <View style={[styles.controls, { paddingBottom: TAB_BAR.height + TAB_BAR.marginBottom + insets.bottom + 16 }]}>
         <TouchableOpacity
-          style={[styles.captureButton, isCapturing && styles.captureButtonDisabled]}
           onPress={handleCapture}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
           disabled={isCapturing}
-          activeOpacity={0.8}
+          activeOpacity={1}
         >
-          <View style={styles.captureButtonInner} />
+          <Animated.View
+            style={[
+              styles.captureButton,
+              isCapturing && styles.captureButtonDisabled,
+              { transform: [{ scale: buttonScale }] }
+            ]}
+          />
         </TouchableOpacity>
       </View>
     </View>
@@ -102,108 +155,94 @@ const styles = StyleSheet.create({
   camera: {
     flex: 1,
   },
-  overlay: {
-    flex: 1,
-    justifyContent: "space-between",
-    paddingTop: 60,
-    paddingBottom: 20,
+  // Top gradient overlay for header
+  topGradient: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: SPACING[5],
+    paddingBottom: SPACING[8],
+    zIndex: 10,
   },
   header: {
     alignItems: "center",
+    paddingTop: SPACING[4],
   },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#fff",
-    textShadowColor: "rgba(0, 0, 0, 0.5)",
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: "rgba(255, 255, 255, 0.8)",
-    marginTop: 4,
-    textShadowColor: "rgba(0, 0, 0, 0.5)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
-  focusContainer: {
+  // Center content area
+  centerContent: {
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
-    marginBottom: 40,
   },
   focusFrame: {
-    width: 260,
-    height: 260,
+    width: 240,
+    height: 240,
     position: "relative",
   },
   corner: {
     position: "absolute",
-    width: 40,
-    height: 40,
-    borderColor: "#fff",
+    width: 32,
+    height: 32,
+    borderColor: "rgba(255, 255, 255, 0.6)",
   },
   topLeft: {
     top: 0,
     left: 0,
-    borderTopWidth: 3,
-    borderLeftWidth: 3,
-    borderTopLeftRadius: 16,
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderTopLeftRadius: RADIUS.lg,
   },
   topRight: {
     top: 0,
     right: 0,
-    borderTopWidth: 3,
-    borderRightWidth: 3,
-    borderTopRightRadius: 16,
+    borderTopWidth: 2,
+    borderRightWidth: 2,
+    borderTopRightRadius: RADIUS.lg,
   },
   bottomLeft: {
     bottom: 0,
     left: 0,
-    borderBottomWidth: 3,
-    borderLeftWidth: 3,
-    borderBottomLeftRadius: 16,
+    borderBottomWidth: 2,
+    borderLeftWidth: 2,
+    borderBottomLeftRadius: RADIUS.lg,
   },
   bottomRight: {
     bottom: 0,
     right: 0,
-    borderBottomWidth: 3,
-    borderRightWidth: 3,
-    borderBottomRightRadius: 16,
+    borderBottomWidth: 2,
+    borderRightWidth: 2,
+    borderBottomRightRadius: RADIUS.lg,
   },
-  hint: {
-    fontSize: 24,
-    marginTop: 20,
-    letterSpacing: 8,
+  // Bottom gradient
+  bottomGradient: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 5,
   },
+  // Controls area
   controls: {
-    height: 100,
-    justifyContent: "center",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
     alignItems: "center",
-    backgroundColor: COLORS.background,
+    zIndex: 20,
   },
   captureButton: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     backgroundColor: COLORS.primary,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#fff",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
+    borderWidth: 4,
+    borderColor: "rgba(255, 255, 255, 0.3)",
   },
   captureButtonDisabled: {
     opacity: 0.5,
   },
-  captureButtonInner: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: COLORS.primary,
-    borderWidth: 3,
-    borderColor: COLORS.background,
-  },
+  // Loading state
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
@@ -211,40 +250,39 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     color: COLORS.secondary,
-    fontSize: 16,
+    fontSize: TYPOGRAPHY.size.md,
   },
+  // Permission state
   permissionContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 40,
+    paddingHorizontal: SPACING[5],
   },
-  emoji: {
-    fontSize: 64,
-    marginBottom: 20,
+  permissionCard: {
+    width: "100%",
+    alignItems: "center",
+  },
+  iconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: COLORS.accentMuted,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: SPACING[5],
   },
   title: {
     color: COLORS.primary,
-    fontSize: 28,
-    fontWeight: "700",
-    marginBottom: 16,
+    fontSize: TYPOGRAPHY.size["2xl"],
+    fontWeight: TYPOGRAPHY.weight.bold,
+    marginBottom: SPACING[3],
   },
   message: {
     color: COLORS.secondary,
-    fontSize: 16,
+    fontSize: TYPOGRAPHY.size.md,
     textAlign: "center",
     lineHeight: 24,
-    marginBottom: 32,
-  },
-  permissionButton: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
-  },
-  permissionButtonText: {
-    color: COLORS.background,
-    fontSize: 18,
-    fontWeight: "600",
+    marginBottom: SPACING[6],
   },
 });

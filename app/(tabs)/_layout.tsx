@@ -1,48 +1,54 @@
 import { Tabs } from "expo-router";
-import { View, Text, StyleSheet } from "react-native";
-import { COLORS } from "../../src/constants";
-
-type TabIconProps = {
-  icon: string;
-  label: string;
-  focused: boolean;
-};
-
-function TabIcon({ icon, label, focused }: TabIconProps) {
-  return (
-    <View style={styles.tabItem}>
-      <Text style={[styles.tabIcon, focused && styles.tabIconFocused]}>{icon}</Text>
-      <Text style={[styles.tabLabel, focused && styles.tabLabelFocused]}>{label}</Text>
-    </View>
-  );
-}
+import { View, StyleSheet } from "react-native";
+import { BlurView } from "expo-blur";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Camera, Heart, Clock } from "lucide-react-native";
+import { COLORS, SPACING } from "../../src/constants";
+import { useHaptics } from "../../src/hooks";
 
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
+  const haptics = useHaptics();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: styles.tabBar,
-        tabBarShowLabel: false,
+        tabBarShowLabel: true,
         tabBarActiveTintColor: COLORS.primary,
         tabBarInactiveTintColor: COLORS.secondary,
+        tabBarStyle: [
+          styles.tabBar,
+          {
+            height: 50 + (insets.bottom > 0 ? insets.bottom : SPACING[2]),
+            paddingBottom: insets.bottom > 0 ? insets.bottom : SPACING[2],
+          },
+        ],
+        tabBarBackground: () => (
+          <BlurView intensity={60} tint="dark" style={StyleSheet.absoluteFill} />
+        ),
+        tabBarLabelStyle: styles.label,
+        tabBarIconStyle: styles.icon,
+      }}
+      screenListeners={{
+        tabPress: () => haptics.selection(),
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Camera",
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon="📷" label="Scan" focused={focused} />
+          title: "Scan",
+          tabBarIcon: ({ color }) => (
+            <Camera size={22} color={color} strokeWidth={1.8} />
           ),
         }}
       />
       <Tabs.Screen
         name="favorites"
         options={{
-          title: "Favorites",
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon="❤️" label="Favorites" focused={focused} />
+          title: "Saved",
+          tabBarIcon: ({ color }) => (
+            <Heart size={22} color={color} strokeWidth={1.8} />
           ),
         }}
       />
@@ -50,8 +56,8 @@ export default function TabLayout() {
         name="history"
         options={{
           title: "History",
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon="🕐" label="History" focused={focused} />
+          tabBarIcon: ({ color }) => (
+            <Clock size={22} color={color} strokeWidth={1.8} />
           ),
         }}
       />
@@ -61,31 +67,17 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: COLORS.surface,
+    position: "absolute",
     borderTopWidth: 0,
-    height: 85,
-    paddingTop: 10,
-    paddingBottom: 25,
+    backgroundColor: "transparent",
+    elevation: 0,
   },
-  tabItem: {
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 4,
-  },
-  tabIcon: {
-    fontSize: 24,
-    opacity: 0.6,
-  },
-  tabIconFocused: {
-    opacity: 1,
-  },
-  tabLabel: {
-    fontSize: 11,
-    color: COLORS.secondary,
+  label: {
+    fontSize: 10,
     fontWeight: "500",
+    marginTop: -2,
   },
-  tabLabelFocused: {
-    color: COLORS.primary,
-    fontWeight: "600",
+  icon: {
+    marginTop: 4,
   },
 });

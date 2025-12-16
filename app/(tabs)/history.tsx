@@ -1,17 +1,10 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useHistory } from "../../src/hooks/useHistory";
-import { COLORS } from "../../src/constants";
-import { FadeIn } from "../../src/components";
-
-const CATEGORY_ICONS: Record<string, string> = {
-  pizza: "🍕",
-  burger: "🍔",
-  sushi: "🍣",
-  ramen: "🍜",
-  empanada: "🥟",
-};
+import { Clock } from "lucide-react-native";
+import { useHistory, useHaptics, useToast } from "../../src/hooks";
+import { COLORS, SPACING, RADIUS, SHADOWS, TYPOGRAPHY, getFoodIcon } from "../../src/constants";
+import { FadeIn, EmptyState, SwipeableRow } from "../../src/components";
 
 function formatTimeAgo(timestamp: number): string {
   const seconds = Math.floor((Date.now() - timestamp) / 1000);
@@ -27,32 +20,37 @@ function capitalizeFirst(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-function EmptyState() {
+function HistoryEmptyState() {
   return (
-    <View style={styles.emptyState}>
-      <View style={styles.emptyIconContainer}>
-        <Text style={styles.emptyEmoji}>🕐</Text>
-      </View>
-      <Text style={styles.emptyTitle}>No search history</Text>
-      <Text style={styles.emptyText}>
-        Your food searches will appear here. Start scanning food to build your history.
-      </Text>
-    </View>
+    <EmptyState
+      Icon={Clock}
+      title="Start exploring"
+      description="Snap a photo of any food and we'll remember your discoveries here"
+    />
   );
 }
 
 export default function HistoryScreen() {
   const insets = useSafeAreaInsets();
   const { history, removeFromHistory, clearHistory, isLoading } = useHistory();
+  const haptics = useHaptics();
+  const { showToast } = useToast();
 
   const handleSearchAgain = (category: string) => {
+    haptics.selection();
     router.push({
       pathname: "/results",
       params: { category },
     });
   };
 
+  const handleRemoveItem = (id: string, category: string) => {
+    removeFromHistory(id);
+    showToast(`${capitalizeFirst(category)} removed from history`, "info");
+  };
+
   const handleClearAll = () => {
+    haptics.warning();
     Alert.alert(
       "Clear History",
       "Are you sure you want to clear all search history?",
@@ -61,7 +59,11 @@ export default function HistoryScreen() {
         {
           text: "Clear",
           style: "destructive",
-          onPress: clearHistory,
+          onPress: () => {
+            haptics.error();
+            clearHistory();
+            showToast("History cleared", "info");
+          },
         },
       ]
     );
@@ -86,37 +88,36 @@ export default function HistoryScreen() {
       </View>
 
       {!isLoading && history.length === 0 ? (
-        <EmptyState />
+        <HistoryEmptyState />
       ) : (
         <FlatList
           data={history}
           keyExtractor={(item) => item.id}
-          renderItem={({ item, index }) => (
-            <FadeIn delay={index * 50}>
-              <TouchableOpacity
-                style={styles.card}
-                onPress={() => handleSearchAgain(item.category)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.cardIcon}>
-                  <Text style={styles.cardEmoji}>
-                    {CATEGORY_ICONS[item.category.toLowerCase()] || "🍽️"}
-                  </Text>
-                </View>
-                <View style={styles.cardContent}>
-                  <Text style={styles.category}>{capitalizeFirst(item.category)}</Text>
-                  <Text style={styles.time}>{formatTimeAgo(item.timestamp)}</Text>
-                </View>
-                <TouchableOpacity
-                  style={styles.removeButton}
-                  onPress={() => removeFromHistory(item.id)}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                >
-                  <Text style={styles.removeIcon}>✕</Text>
-                </TouchableOpacity>
-              </TouchableOpacity>
-            </FadeIn>
-          )}
+          renderItem={({ item, index }) => {
+            const IconComponent = getFoodIcon(item.category);
+            return (
+              <FadeIn delay={index * 60} type="spring" direction="up">
+                <SwipeableRow onDelete={() => handleRemoveItem(item.id, item.category)}>
+                  <TouchableOpacity
+                    style={styles.card}
+                    onPress={() => handleSearchAgain(item.category)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.cardIcon}>
+                      <IconComponent size={24} color={COLORS.accent} />
+                    </View>
+                    <View style={styles.cardContent}>
+                      <Text style={styles.category}>{capitalizeFirst(item.category)}</Text>
+                      <Text style={styles.time}>{formatTimeAgo(item.timestamp)}</Text>
+                    </View>
+                    <View style={styles.swipeHint}>
+                      <Text style={styles.swipeHintText}>Swipe to delete</Text>
+                    </View>
+                  </TouchableOpacity>
+                </SwipeableRow>
+              </FadeIn>
+            );
+          }}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
         />
@@ -134,8 +135,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: SPACING[5],
+    paddingVertical: SPACING[4],
   },
   headerLeft: {
     flexDirection: "row",
@@ -143,107 +144,72 @@ const styles = StyleSheet.create({
   },
   title: {
     color: COLORS.primary,
-    fontSize: 34,
-    fontWeight: "700",
+    fontSize: TYPOGRAPHY.size["4xl"],
+    fontWeight: TYPOGRAPHY.weight.bold,
   },
   countBadge: {
     backgroundColor: COLORS.surface,
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    marginLeft: 12,
+    borderRadius: RADIUS.lg,
+    paddingHorizontal: SPACING[3],
+    paddingVertical: SPACING[1],
+    marginLeft: SPACING[3],
   },
   countText: {
     color: COLORS.secondary,
-    fontSize: 14,
-    fontWeight: "600",
+    fontSize: TYPOGRAPHY.size.sm,
+    fontWeight: TYPOGRAPHY.weight.semibold,
   },
   clearButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingVertical: SPACING[2],
+    paddingHorizontal: SPACING[3],
   },
   clearButtonText: {
     color: COLORS.error,
-    fontSize: 15,
-    fontWeight: "500",
+    fontSize: TYPOGRAPHY.size.base,
+    fontWeight: TYPOGRAPHY.weight.medium,
   },
   list: {
-    paddingHorizontal: 20,
-    paddingBottom: 100,
-    gap: 10,
+    paddingHorizontal: SPACING[5],
+    paddingBottom: 120,
+    gap: SPACING[3],
   },
   card: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    padding: 14,
+    backgroundColor: COLORS.glass.background,
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    borderColor: COLORS.glass.border,
+    padding: SPACING[3],
     flexDirection: "row",
     alignItems: "center",
+    ...SHADOWS.md,
   },
   cardIcon: {
     width: 48,
     height: 48,
-    borderRadius: 12,
-    backgroundColor: COLORS.background,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.accentMuted,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 14,
-  },
-  cardEmoji: {
-    fontSize: 24,
+    marginRight: SPACING[3],
   },
   cardContent: {
     flex: 1,
   },
   category: {
     color: COLORS.primary,
-    fontSize: 17,
-    fontWeight: "600",
-    marginBottom: 4,
+    fontSize: TYPOGRAPHY.size.md,
+    fontWeight: TYPOGRAPHY.weight.semibold,
+    marginBottom: SPACING[1],
   },
   time: {
     color: COLORS.secondary,
-    fontSize: 13,
+    fontSize: TYPOGRAPHY.size.sm,
   },
-  removeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: COLORS.background,
-    justifyContent: "center",
-    alignItems: "center",
+  swipeHint: {
+    opacity: 0.5,
   },
-  removeIcon: {
-    color: COLORS.secondary,
-    fontSize: 14,
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 40,
-  },
-  emptyIconContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: COLORS.surface,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  emptyEmoji: {
-    fontSize: 48,
-  },
-  emptyTitle: {
-    color: COLORS.primary,
-    fontSize: 22,
-    fontWeight: "600",
-    marginBottom: 12,
-  },
-  emptyText: {
-    color: COLORS.secondary,
-    fontSize: 15,
-    textAlign: "center",
-    lineHeight: 22,
+  swipeHintText: {
+    color: COLORS.tertiary,
+    fontSize: TYPOGRAPHY.size.xs,
   },
 });

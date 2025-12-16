@@ -1,13 +1,14 @@
 {
   "expo": {
-    "name": "Menkiki-like",
+    "name": "Menkiki",
     "slug": "menkiki-like",
-    "version": "2.2.0",
+    "version": "1.0.0",
     "scheme": "menkiki",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
+    "description": "Scan any food with AI and discover the best restaurants nearby serving exactly what you're craving.",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -18,8 +19,9 @@
       "bundleIdentifier": "com.tomymaritano.menkikilike",
       "buildNumber": "1",
       "infoPlist": {
-        "NSCameraUsageDescription": "We need camera access to take photos of food and find nearby restaurants.",
-        "NSLocationWhenInUseUsageDescription": "We need your location to find nearby restaurants."
+        "NSCameraUsageDescription": "Menkiki uses your camera to scan and identify food, so we can help you find restaurants serving exactly what you're craving.",
+        "NSLocationWhenInUseUsageDescription": "Menkiki uses your location to show you the closest restaurants where you can satisfy your craving right now.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -32,8 +34,7 @@
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.ACCESS_COARSE_LOCATION"
       ],
       "edgeToEdgeEnabled": true
     },
@@ -44,13 +45,13 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "We need camera access to take photos of food and find nearby restaurants."
+          "cameraPermission": "Menkiki uses your camera to scan and identify food, so we can help you find restaurants serving exactly what you're craving."
         }
       ],
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "We need your location to find nearby restaurants."
+          "locationWhenInUsePermission": "Menkiki uses your location to show you the closest restaurants where you can satisfy your craving right now."
         }
       ]
     ],
